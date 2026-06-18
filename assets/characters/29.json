@@ -1,0 +1,52 @@
+{
+  "id": 29,
+  "name": "公孙止",
+  "sexual": 1,
+  "pic": 29,
+  "modelKey": "gongsunzhi",
+  "maxHp": 240,
+  "maxMp": 150,
+  "hpInc": 12,
+  "level": 3,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 40,
+  "agility": 30,
+  "defence": 30,
+  "heal": 0,
+  "usePoison": 15,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 30,
+  "sword": 45,
+  "blade": 0,
+  "exotic": 20,
+  "hiddenWeapon": 10,
+  "martialKnowledge": 25,
+  "attackPoison": 15,
+  "ambidextrous": 1,
+  "iq": 70,
+  "morality": 20,
+  "reputation": 25,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      2,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      200
+    ],
+    [
+      31,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣"
+}

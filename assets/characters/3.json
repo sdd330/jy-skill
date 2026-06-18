@@ -1,0 +1,60 @@
+{
+  "id": 3,
+  "name": "虚竹",
+  "sexual": 1,
+  "pic": 3,
+  "modelKey": "xuzhu",
+  "maxHp": 250,
+  "maxMp": 180,
+  "hpInc": 13,
+  "level": 2,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 35,
+  "agility": 20,
+  "defence": 30,
+  "heal": 30,
+  "usePoison": 0,
+  "dePoison": 20,
+  "antiPoison": 10,
+  "fist": 40,
+  "sword": 0,
+  "blade": 0,
+  "exotic": 20,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 15,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 50,
+  "morality": 85,
+  "reputation": 30,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      8,
+      2
+    ],
+    [
+      9,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      80
+    ],
+    [
+      30,
+      5
+    ],
+    [
+      33,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

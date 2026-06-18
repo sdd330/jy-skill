@@ -1,0 +1,56 @@
+{
+  "id": 23,
+  "name": "扫地僧",
+  "sexual": 1,
+  "pic": 23,
+  "modelKey": "saodiseng",
+  "maxHp": 500,
+  "maxMp": 300,
+  "hpInc": 20,
+  "level": 10,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 70,
+  "agility": 50,
+  "defence": 70,
+  "heal": 50,
+  "usePoison": 0,
+  "dePoison": 50,
+  "antiPoison": 50,
+  "fist": 60,
+  "sword": 60,
+  "blade": 0,
+  "exotic": 50,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 80,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 95,
+  "morality": 95,
+  "reputation": 100,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      99,
+      5
+    ],
+    [
+      6,
+      5
+    ]
+  ],
+  "items": [
+    [
+      1,
+      1000
+    ],
+    [
+      32,
+      10
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

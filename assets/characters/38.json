@@ -1,0 +1,56 @@
+{
+  "id": 38,
+  "name": "周芷若",
+  "sexual": 0,
+  "pic": 38,
+  "modelKey": "zhouzhiruo",
+  "maxHp": 170,
+  "maxMp": 140,
+  "hpInc": 8,
+  "level": 2,
+  "exp": 0,
+  "mpType": 0,
+  "attack": 35,
+  "agility": 32,
+  "defence": 22,
+  "heal": 0,
+  "usePoison": 20,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 20,
+  "sword": 45,
+  "blade": 0,
+  "exotic": 30,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 25,
+  "attackPoison": 20,
+  "ambidextrous": 0,
+  "iq": 80,
+  "morality": 40,
+  "reputation": 30,
+  "weapon": 13,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      12,
+      2
+    ],
+    [
+      18,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      150
+    ],
+    [
+      30,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

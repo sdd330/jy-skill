@@ -1,0 +1,52 @@
+{
+  "id": 14,
+  "name": "东方不败",
+  "sexual": 2,
+  "pic": 14,
+  "modelKey": "dongfangbubai",
+  "maxHp": 380,
+  "maxMp": 220,
+  "hpInc": 17,
+  "level": 6,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 65,
+  "agility": 60,
+  "defence": 35,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 30,
+  "sword": 70,
+  "blade": 0,
+  "exotic": 40,
+  "hiddenWeapon": 50,
+  "martialKnowledge": 40,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 80,
+  "morality": 20,
+  "reputation": 70,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      96,
+      5
+    ]
+  ],
+  "items": [
+    [
+      1,
+      500
+    ],
+    [
+      32,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "笑傲江湖"
+}

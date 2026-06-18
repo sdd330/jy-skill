@@ -1,0 +1,56 @@
+{
+  "id": 46,
+  "name": "范遥",
+  "sexual": 1,
+  "pic": 46,
+  "modelKey": "fanyao",
+  "maxHp": 230,
+  "maxMp": 140,
+  "hpInc": 11,
+  "level": 3,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 40,
+  "agility": 30,
+  "defence": 28,
+  "heal": 0,
+  "usePoison": 10,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 35,
+  "sword": 38,
+  "blade": 0,
+  "exotic": 30,
+  "hiddenWeapon": 10,
+  "martialKnowledge": 28,
+  "attackPoison": 10,
+  "ambidextrous": 1,
+  "iq": 75,
+  "morality": 50,
+  "reputation": 30,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      17,
+      2
+    ],
+    [
+      19,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      200
+    ],
+    [
+      31,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

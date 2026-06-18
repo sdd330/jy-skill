@@ -1,0 +1,855 @@
+{
+  "maps": [
+    {
+      "id": 0,
+      "name": "大地图",
+      "desc": "江湖世界",
+      "width": 20,
+      "height": 20,
+      "bgm": "world_map",
+      "tiles": [
+        [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+        [3,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,5,0,0,4,4,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,5,0,0,4,4,0,0,0,0,0,0,0,0,0,0,3],
+        [3,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,3],
+        [3,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,3],
+        [3,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,3],
+        [3,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,3],
+        [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]
+      ],
+      "npcs": [],
+      "connections": [
+        { "targetMapId": 1, "x": 4, "y": 4 },
+        { "targetMapId": 2, "x": 10, "y": 9 },
+        { "targetMapId": 3, "x": 7, "y": 14 },
+        { "targetMapId": 4, "x": 14, "y": 4 },
+        { "targetMapId": 5, "x": 10, "y": 14 }
+      ],
+      "encounters": [
+        { "probability": 10, "battleId": 1, "minSteps": 3 }
+      ],
+      "events": []
+    },
+    {
+      "id": 1,
+      "name": "小村",
+      "desc": "一个宁静的小村庄",
+      "width": 10,
+      "height": 10,
+      "bgm": "village",
+      "tiles": [
+        [1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,5,0,0,0,0,1],
+        [1,0,0,0,5,0,0,0,0,1],
+        [1,0,0,0,5,0,0,0,0,1],
+        [1,5,5,5,5,5,5,5,5,1],
+        [1,0,0,0,5,0,0,0,0,1],
+        [1,0,0,0,5,0,0,0,0,1],
+        [1,0,0,0,5,0,0,0,0,1],
+        [1,0,0,0,5,0,0,0,0,1],
+        [1,1,1,1,1,5,1,1,1,1]
+      ],
+      "npcs": [
+        {
+          "id": 101,
+          "roleId": 300,
+          "x": 2,
+          "y": 2,
+          "direction": 1,
+          "dialogId": "village_elder",
+          "isShop": false,
+          "shopItems": []
+        },
+        {
+          "id": 102,
+          "roleId": 301,
+          "x": 7,
+          "y": 6,
+          "direction": 2,
+          "dialogId": "village_shop",
+          "isShop": true,
+          "shopItems": [30, 31, 33, 35]
+        }
+      ],
+      "connections": [
+        { "targetMapId": 0, "x": 5, "y": 9 }
+      ],
+      "encounters": [],
+      "events": [
+        {
+          "id": "village_start",
+          "triggerType": "auto",
+          "x": 5,
+          "y": 5,
+          "conditions": [{ "type": "flag", "params": { "flag": "village_visited", "value": false } }],
+          "actions": [
+            { "type": "setFlag", "params": { "flag": "village_visited", "value": true } },
+            { "type": "dialog", "params": { "dialogId": "village_intro" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "山洞",
+      "desc": "阴暗的山洞",
+      "width": 12,
+      "height": 10,
+      "bgm": "cave",
+      "tiles": [
+        [1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,1,1,0,0,1,1,0,0,1],
+        [1,0,0,1,0,0,0,0,1,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,0,1,0,0,0,0,1,0,0,1],
+        [1,0,0,1,1,0,0,1,1,0,0,1],
+        [1,1,1,1,1,5,1,1,1,1,1,1]
+      ],
+      "npcs": [
+        {
+          "id": 201,
+          "roleId": 202,
+          "x": 6,
+          "y": 5,
+          "direction": 1,
+          "dialogId": "cave_boss",
+          "isShop": false,
+          "shopItems": []
+        }
+      ],
+      "connections": [
+        { "targetMapId": 0, "x": 5, "y": 9 }
+      ],
+      "encounters": [
+        { "probability": 20, "battleId": 2, "minSteps": 2 }
+      ],
+      "events": [
+        {
+          "id": "cave_treasure",
+          "triggerType": "interact",
+          "x": 6,
+          "y": 3,
+          "conditions": [{ "type": "flag", "params": { "flag": "cave_treasure", "value": false } }],
+          "actions": [
+            { "type": "setFlag", "params": { "flag": "cave_treasure", "value": true } },
+            { "type": "addItem", "params": { "itemId": 13, "count": 1 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "平安镇",
+      "desc": "热闹的城镇",
+      "width": 15,
+      "height": 12,
+      "bgm": "town",
+      "tiles": [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,0,0,5,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,5,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,5,0,0,0,0,0,0,0,1],
+        [1,5,5,5,5,5,5,5,5,5,5,5,5,5,1],
+        [1,0,0,0,5,0,0,0,0,0,5,0,0,0,1],
+        [1,0,0,0,5,0,0,0,0,0,5,0,0,0,1],
+        [1,0,0,0,5,0,0,0,0,0,5,0,0,0,1],
+        [1,5,5,5,5,5,5,5,5,5,5,5,5,5,1],
+        [1,0,0,0,0,0,5,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,5,0,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,5,1,1,1,1,1,1,1,1]
+      ],
+      "npcs": [
+        {
+          "id": 301,
+          "roleId": 300,
+          "x": 3,
+          "y": 6,
+          "direction": 1,
+          "dialogId": "town_guard",
+          "isShop": false,
+          "shopItems": []
+        },
+        {
+          "id": 302,
+          "roleId": 301,
+          "x": 10,
+          "y": 6,
+          "direction": 2,
+          "dialogId": "town_shop",
+          "isShop": true,
+          "shopItems": [10, 11, 20, 21, 30, 31, 33, 35]
+        },
+        {
+          "id": 303,
+          "roleId": 301,
+          "x": 7,
+          "y": 3,
+          "direction": 1,
+          "dialogId": "town_inn",
+          "isShop": true,
+          "shopItems": [30, 31, 32, 33, 34, 35, 36]
+        }
+      ],
+      "connections": [
+        { "targetMapId": 0, "x": 6, "y": 11 }
+      ],
+      "encounters": [],
+      "events": []
+    },
+    {
+      "id": 4,
+      "name": "华山",
+      "desc": "天下五绝论剑之地，山势险峻。",
+      "width": 14,
+      "height": 12,
+      "bgm": "mountain",
+      "tiles": [
+        [3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,0,5,5,5,0,0,0,0,0,3],
+        [3,0,0,0,5,0,0,0,5,0,0,0,0,3],
+        [3,0,0,5,0,0,0,0,0,5,0,0,0,3],
+        [3,0,5,0,0,0,0,0,0,0,5,0,0,3],
+        [3,5,0,0,0,0,0,0,0,0,0,5,0,3],
+        [3,0,0,0,0,0,0,0,0,0,0,0,5,3],
+        [3,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,3,3,3,3,3,3,3,3,3,3,3,3,3]
+      ],
+      "npcs": [
+        {
+          "id": 401,
+          "roleId": 13,
+          "x": 6,
+          "y": 5,
+          "direction": 1,
+          "dialogId": "huashan_wangchongyang",
+          "isShop": false,
+          "shopItems": []
+        }
+      ],
+      "connections": [
+        { "targetMapId": 0, "x": 6, "y": 11 }
+      ],
+      "encounters": [
+        { "probability": 15, "battleId": 4, "minSteps": 3 }
+      ],
+      "events": [
+        {
+          "id": "huashan_lunjian",
+          "triggerType": "interact",
+          "x": 6,
+          "y": 5,
+          "conditions": [{ "type": "flag", "params": { "flag": "huashan_lunjian", "value": false } }],
+          "actions": [
+            { "type": "setFlag", "params": { "flag": "huashan_lunjian", "value": true } },
+            { "type": "dialog", "params": { "dialogId": "huashan_lunjian" } }
+          ]
+        }
+      ],
+      "source": "射雕英雄传"
+    },
+    {
+      "id": 5,
+      "name": "桃花岛",
+      "desc": "东海岛屿，黄药师居所。机关重重。",
+      "width": 12,
+      "height": 10,
+      "bgm": "island",
+      "tiles": [
+        [2,2,2,2,2,2,2,2,2,2,2,2],
+        [2,0,0,0,0,0,5,0,0,0,0,2],
+        [2,0,0,0,0,0,5,0,0,0,0,2],
+        [2,0,0,0,0,0,5,0,0,0,0,2],
+        [2,0,0,0,5,5,5,5,0,0,0,2],
+        [2,0,0,5,0,0,0,0,5,0,0,2],
+        [2,0,5,0,0,0,0,0,0,5,0,2],
+        [2,5,0,0,0,0,0,0,0,0,5,2],
+        [2,0,0,0,0,0,0,0,0,0,0,2],
+        [2,2,2,2,2,2,2,2,2,2,2,2]
+      ],
+      "npcs": [
+        {
+          "id": 501,
+          "roleId": 11,
+          "x": 6,
+          "y": 5,
+          "direction": 1,
+          "dialogId": "taohuadao_huangyaoshi",
+          "isShop": false,
+          "shopItems": []
+        },
+        {
+          "id": 502,
+          "roleId": 8,
+          "x": 4,
+          "y": 4,
+          "direction": 3,
+          "dialogId": "taohuadao_huangrong",
+          "isShop": false,
+          "shopItems": []
+        }
+      ],
+      "connections": [
+        { "targetMapId": 0, "x": 5, "y": 9 }
+      ],
+      "encounters": [
+        { "probability": 10, "battleId": 5, "minSteps": 2 }
+      ],
+      "events": [
+        {
+          "id": "taohuadao_enter",
+          "triggerType": "auto",
+          "x": 5,
+          "y": 5,
+          "conditions": [{ "type": "flag", "params": { "flag": "taohuadao_visited", "value": false } }],
+          "actions": [
+            { "type": "setFlag", "params": { "flag": "taohuadao_visited", "value": true } },
+            { "type": "dialog", "params": { "dialogId": "taohuadao_intro" } }
+          ]
+        }
+      ],
+      "source": "射雕英雄传"
+    },
+    {
+      "id": 6,
+      "name": "终南山全真教",
+      "desc": "道教圣地，全真教总坛。",
+      "width": 14,
+      "height": 12,
+      "bgm": "temple",
+      "tiles": [
+        [3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,5,5,5,5,5,0,0,0,0,3],
+        [3,0,0,5,0,0,0,0,0,5,0,0,0,3],
+        [3,0,5,0,0,0,0,0,0,0,5,0,0,3],
+        [3,5,0,0,0,0,0,0,0,0,0,5,0,3],
+        [3,0,0,0,0,0,0,0,0,0,0,0,5,3],
+        [3,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,3,3,3,3,3,3,3,3,3,3,3,3,3]
+      ],
+      "npcs": [
+        {
+          "id": 601,
+          "roleId": 13,
+          "x": 6,
+          "y": 5,
+          "direction": 1,
+          "dialogId": "quanzhen_wangchongyang",
+          "isShop": false,
+          "shopItems": []
+        },
+        {
+          "id": 602,
+          "roleId": 16,
+          "x": 4,
+          "y": 4,
+          "direction": 3,
+          "dialogId": "quanzhen_zhoubotong",
+          "isShop": false,
+          "shopItems": []
+        }
+      ],
+      "connections": [
+        { "targetMapId": 0, "x": 6, "y": 11 }
+      ],
+      "encounters": [
+        { "probability": 10, "battleId": 6, "minSteps": 2 }
+      ],
+      "events": [
+        {
+          "id": "quanzhen_enter",
+          "triggerType": "auto",
+          "x": 5,
+          "y": 5,
+          "conditions": [{ "type": "flag", "params": { "flag": "quanzhen_visited", "value": false } }],
+          "actions": [
+            { "type": "setFlag", "params": { "flag": "quanzhen_visited", "value": true } },
+            { "type": "dialog", "params": { "dialogId": "quanzhen_intro" } }
+          ]
+        }
+      ],
+      "source": "射雕英雄传"
+    },
+    {
+      "id": 7,
+      "name": "光明顶",
+      "desc": "明教总坛，六大派围攻之地。",
+      "width": 14,
+      "height": 12,
+      "bgm": "temple",
+      "tiles": [
+        [3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,5,0,0,0,0,0,0,3],
+        [3,0,0,0,5,5,5,5,5,0,0,0,0,3],
+        [3,0,0,5,0,0,0,0,0,5,0,0,0,3],
+        [3,0,5,0,0,0,0,0,0,0,5,0,0,3],
+        [3,5,0,0,0,0,0,0,0,0,0,5,0,3],
+        [3,0,0,0,0,0,0,0,0,0,0,0,5,3],
+        [3,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,0,0,0,0,0,0,0,0,0,0,0,0,3],
+        [3,3,3,3,3,3,3,3,3,3,3,3,3,3]
+      ],
+      "npcs": [
+        {
+          "id": 701,
+          "roleId": 7,
+          "x": 6,
+          "y": 5,
+          "direction": 1,
+          "dialogId": "guangmingding_zhangwuji",
+          "isShop": false,
+          "shopItems": []
+        }
+      ],
+      "connections": [
+        { "targetMapId": 0, "x": 6, "y": 11 }
+      ],
+      "encounters": [
+        { "probability": 20, "battleId": 7, "minSteps": 3 }
+      ],
+      "events": [
+        {
+          "id": "guangmingding_enter",
+          "triggerType": "auto",
+          "x": 5,
+          "y": 5,
+          "conditions": [{ "type": "flag", "params": { "flag": "guangmingding_visited", "value": false } }],
+          "actions": [
+            { "type": "setFlag", "params": { "flag": "guangmingding_visited", "value": true } },
+            { "type": "dialog", "params": { "dialogId": "guangmingding_intro" } }
+          ]
+        }
+      ],
+      "source": "倚天屠龙记"
+    }
+  ],
+  "battles": [
+    {
+      "id": 1,
+      "name": "山贼袭击",
+      "mapWidth": 8,
+      "mapHeight": 8,
+      "tiles": [
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0]
+      ],
+      "exp": 50,
+      "bgm": "battle_normal",
+      "teammates": [100],
+      "enemies": [200, 200, 200],
+      "autoTeammates": [],
+      "winCondition": { "type": "allEnemyDead" },
+      "loseCondition": { "type": "allTeammateDead" }
+    },
+    {
+      "id": 2,
+      "name": "山洞遭遇战",
+      "mapWidth": 10,
+      "mapHeight": 10,
+      "tiles": [
+        [0,0,0,1,1,1,1,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,0,0,0,1],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,1,1,1,1,0,0,0]
+      ],
+      "exp": 100,
+      "bgm": "battle_boss",
+      "teammates": [100],
+      "enemies": [200, 201, 200, 201],
+      "autoTeammates": [],
+      "winCondition": { "type": "allEnemyDead" },
+      "loseCondition": { "type": "allTeammateDead" }
+    },
+    {
+      "id": 3,
+      "name": "武林高手对决",
+      "mapWidth": 12,
+      "mapHeight": 12,
+      "tiles": [
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0]
+      ],
+      "exp": 300,
+      "bgm": "battle_boss",
+      "teammates": [100],
+      "enemies": [202, 202],
+      "autoTeammates": [],
+      "winCondition": { "type": "allEnemyDead" },
+      "loseCondition": { "type": "allTeammateDead" }
+    },
+    {
+      "id": 4,
+      "name": "华山论剑",
+      "mapWidth": 12,
+      "mapHeight": 12,
+      "tiles": [
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0]
+      ],
+      "exp": 500,
+      "bgm": "battle_epic",
+      "teammates": [100],
+      "enemies": [10, 11, 12],
+      "autoTeammates": [],
+      "winCondition": { "type": "allEnemyDead" },
+      "loseCondition": { "type": "allTeammateDead" }
+    },
+    {
+      "id": 5,
+      "name": "桃花岛试炼",
+      "mapWidth": 10,
+      "mapHeight": 10,
+      "tiles": [
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0]
+      ],
+      "exp": 200,
+      "bgm": "battle_normal",
+      "teammates": [100],
+      "enemies": [202, 202, 202],
+      "autoTeammates": [],
+      "winCondition": { "type": "allEnemyDead" },
+      "loseCondition": { "type": "allTeammateDead" }
+    },
+    {
+      "id": 6,
+      "name": "全真教考验",
+      "mapWidth": 10,
+      "mapHeight": 10,
+      "tiles": [
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0]
+      ],
+      "exp": 250,
+      "bgm": "battle_normal",
+      "teammates": [100],
+      "enemies": [202, 202, 202],
+      "autoTeammates": [],
+      "winCondition": { "type": "allEnemyDead" },
+      "loseCondition": { "type": "allTeammateDead" }
+    },
+    {
+      "id": 7,
+      "name": "光明顶之战",
+      "mapWidth": 12,
+      "mapHeight": 12,
+      "tiles": [
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0]
+      ],
+      "exp": 400,
+      "bgm": "battle_epic",
+      "teammates": [100],
+      "enemies": [202, 202, 202, 202],
+      "autoTeammates": [],
+      "winCondition": { "type": "allEnemyDead" },
+      "loseCondition": { "type": "allTeammateDead" }
+    }
+  ],
+  "dialogs": {
+    "village_intro": {
+      "id": "village_intro",
+      "speaker": "村长",
+      "text": "欢迎来到小村，年轻人。这里是你的冒险起点。",
+      "choices": [
+        { "text": "谢谢村长", "nextId": "village_intro_2" }
+      ]
+    },
+    "village_intro_2": {
+      "id": "village_intro_2",
+      "speaker": "村长",
+      "text": "村外有山贼出没，你要小心。如果准备好了，可以去镇上看看。",
+      "choices": [
+        { "text": "我知道了", "nextId": "" }
+      ]
+    },
+    "village_elder": {
+      "id": "village_elder",
+      "speaker": "村长",
+      "text": "有什么需要帮忙的吗？",
+      "choices": [
+        { "text": "请问这里有什么任务？", "nextId": "village_quest" },
+        { "text": "没什么事", "nextId": "" }
+      ]
+    },
+    "village_quest": {
+      "id": "village_quest",
+      "speaker": "村长",
+      "text": "村外的山洞里有宝物，但也有很多危险的怪物。你愿意去探索吗？",
+      "choices": [
+        {
+          "text": "我愿意去",
+          "nextId": "",
+          "actions": [{ "type": "setFlag", "params": { "flag": "cave_quest", "value": true } }]
+        },
+        { "text": "现在还不行", "nextId": "" }
+      ]
+    },
+    "village_shop": {
+      "id": "village_shop",
+      "speaker": "商人",
+      "text": "欢迎光临！看看有什么需要的吗？",
+      "choices": [
+        {
+          "text": "看看商品",
+          "nextId": "",
+          "actions": [{ "type": "openShop", "params": {} }]
+        },
+        { "text": "不用了", "nextId": "" }
+      ]
+    },
+    "cave_boss": {
+      "id": "cave_boss",
+      "speaker": "神秘人",
+      "text": "你终于来了。想要宝藏？先过我这关！",
+      "choices": [
+        {
+          "text": "来吧！",
+          "nextId": "",
+          "actions": [{ "type": "battle", "params": { "battleId": 3 } }]
+        }
+      ]
+    },
+    "town_guard": {
+      "id": "town_guard",
+      "speaker": "守卫",
+      "text": "这里是平安镇，欢迎来到。",
+      "choices": [
+        { "text": "谢谢", "nextId": "" }
+      ]
+    },
+    "town_shop": {
+      "id": "town_shop",
+      "speaker": "老板",
+      "text": "欢迎！本店商品齐全，应有尽有！",
+      "choices": [
+        {
+          "text": "看看商品",
+          "nextId": "",
+          "actions": [{ "type": "openShop", "params": {} }]
+        },
+        { "text": "告辞", "nextId": "" }
+      ]
+    },
+    "town_inn": {
+      "id": "town_inn",
+      "speaker": "客栈老板",
+      "text": "客官，要住店吗？休息一下可以恢复体力。",
+      "choices": [
+        {
+          "text": "休息一下",
+          "nextId": "inn_rest",
+          "actions": [{ "type": "heal", "params": {} }]
+        },
+        { "text": "不用了", "nextId": "" }
+      ]
+    },
+    "inn_rest": {
+      "id": "inn_rest",
+      "speaker": "客栈老板",
+      "text": "好的，已经为您准备好房间。休息后体力已恢复。",
+      "choices": [
+        { "text": "谢谢", "nextId": "" }
+      ]
+    },
+    "huashan_wangchongyang": {
+      "id": "huashan_wangchongyang",
+      "speaker": "王重阳",
+      "text": "华山论剑，天下英雄齐聚于此。你可有胆量一试？",
+      "choices": [
+        {
+          "text": "晚辈愿意一试",
+          "nextId": "",
+          "actions": [{ "type": "battle", "params": { "battleId": 4 } }]
+        },
+        { "text": "晚辈实力不足", "nextId": "" }
+      ]
+    },
+    "huashan_lunjian": {
+      "id": "huashan_lunjian",
+      "speaker": "旁白",
+      "text": "华山之巅，剑气纵横。五绝高手齐聚一堂，论剑三日三夜。",
+      "choices": [
+        { "text": "（继续）", "nextId": "" }
+      ]
+    },
+    "taohuadao_huangyaoshi": {
+      "id": "taohuadao_huangyaoshi",
+      "speaker": "黄药师",
+      "text": "何人擅闯桃花岛？",
+      "choices": [
+        { "text": "晚辈前来拜访", "nextId": "taohuadao_huangyaoshi_2" },
+        { "text": "晚辈告退", "nextId": "" }
+      ]
+    },
+    "taohuadao_huangyaoshi_2": {
+      "id": "taohaiduangyaoshi_2",
+      "speaker": "黄药师",
+      "text": "哼，既来之则安之。先过了我这关再说。",
+      "choices": [
+        {
+          "text": "请赐教",
+          "nextId": "",
+          "actions": [{ "type": "battle", "params": { "battleId": 5 } }]
+        }
+      ]
+    },
+    "taohuadao_huangrong": {
+      "id": "taohuadao_huangrong",
+      "speaker": "黄蓉",
+      "text": "你是来找我爹爹的吗？他在桃花林里。",
+      "choices": [
+        { "text": "多谢黄姑娘", "nextId": "" }
+      ]
+    },
+    "taohuadao_intro": {
+      "id": "taohuadao_intro",
+      "speaker": "旁白",
+      "text": "桃花岛，东海之上的世外桃源。岛上桃花盛开，机关重重。",
+      "choices": [
+        { "text": "（继续）", "nextId": "" }
+      ]
+    },
+    "quanzhen_wangchongyang": {
+      "id": "quanzhen_wangchongyang",
+      "speaker": "王重阳",
+      "text": "全真教乃天下武学正宗，你可愿入我门下？",
+      "choices": [
+        { "text": "弟子愿意", "nextId": "quanzhen_accept" },
+        { "text": "晚辈考虑一下", "nextId": "" }
+      ]
+    },
+    "quanzhen_accept": {
+      "id": "quanzhen_accept",
+      "speaker": "王重阳",
+      "text": "好！从今日起，你便是全真教弟子。",
+      "choices": [
+        {
+          "text": "多谢师父",
+          "nextId": "",
+          "actions": [
+            { "type": "addItem", "params": { "itemId": 41, "count": 1 } }
+          ]
+        }
+      ]
+    },
+    "quanzhen_zhoubotong": {
+      "id": "quanzhen_zhoubotong",
+      "speaker": "周伯通",
+      "text": "哈哈，又来新人了！来来来，陪老顽童玩玩！",
+      "choices": [
+        { "text": "前辈请指教", "nextId": "" }
+      ]
+    },
+    "quanzhen_intro": {
+      "id": "quanzhen_intro",
+      "speaker": "旁白",
+      "text": "终南山全真教，道教圣地。全真七子名震天下。",
+      "choices": [
+        { "text": "（继续）", "nextId": "" }
+      ]
+    },
+    "guangmingding_zhangwuji": {
+      "id": "guangmingding_zhangwuji",
+      "speaker": "张无忌",
+      "text": "光明顶危在旦夕，少侠可愿助我一臂之力？",
+      "choices": [
+        {
+          "text": "义不容辞",
+          "nextId": "",
+          "actions": [{ "type": "battle", "params": { "battleId": 7 } }]
+        },
+        { "text": "容我考虑", "nextId": "" }
+      ]
+    },
+    "guangmingding_intro": {
+      "id": "guangmingding_intro",
+      "speaker": "旁白",
+      "text": "光明顶，明教总坛。六大派围攻之际，群雄齐聚。",
+      "choices": [
+        { "text": "（继续）", "nextId": "" }
+      ]
+    }
+  }
+}

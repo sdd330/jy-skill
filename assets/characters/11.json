@@ -1,0 +1,56 @@
+{
+  "id": 11,
+  "name": "黄药师",
+  "sexual": 1,
+  "pic": 11,
+  "modelKey": "huangyaoshi",
+  "maxHp": 320,
+  "maxMp": 200,
+  "hpInc": 14,
+  "level": 5,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 55,
+  "agility": 45,
+  "defence": 40,
+  "heal": 10,
+  "usePoison": 10,
+  "dePoison": 10,
+  "antiPoison": 10,
+  "fist": 40,
+  "sword": 50,
+  "blade": 0,
+  "exotic": 60,
+  "hiddenWeapon": 40,
+  "martialKnowledge": 50,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 95,
+  "morality": 50,
+  "reputation": 70,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      93,
+      4
+    ],
+    [
+      14,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      400
+    ],
+    [
+      32,
+      2
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "射雕英雄传"
+}

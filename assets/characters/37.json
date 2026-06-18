@@ -1,0 +1,52 @@
+{
+  "id": 37,
+  "name": "赵敏",
+  "sexual": 0,
+  "pic": 37,
+  "modelKey": "zhaomin",
+  "maxHp": 150,
+  "maxMp": 120,
+  "hpInc": 7,
+  "level": 2,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 25,
+  "agility": 30,
+  "defence": 20,
+  "heal": 0,
+  "usePoison": 15,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 20,
+  "sword": 30,
+  "blade": 0,
+  "exotic": 25,
+  "hiddenWeapon": 15,
+  "martialKnowledge": 30,
+  "attackPoison": 15,
+  "ambidextrous": 0,
+  "iq": 90,
+  "morality": 50,
+  "reputation": 35,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      51,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      200
+    ],
+    [
+      51,
+      10
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

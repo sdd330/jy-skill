@@ -1,0 +1,60 @@
+{
+  "id": 1,
+  "name": "段誉",
+  "sexual": 1,
+  "pic": 1,
+  "modelKey": "duanyu",
+  "maxHp": 180,
+  "maxMp": 200,
+  "hpInc": 10,
+  "level": 1,
+  "exp": 0,
+  "mpType": 0,
+  "attack": 20,
+  "agility": 30,
+  "defence": 15,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 30,
+  "sword": 40,
+  "blade": 0,
+  "exotic": 20,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 20,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 80,
+  "morality": 90,
+  "reputation": 20,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      3,
+      1
+    ],
+    [
+      4,
+      1
+    ],
+    [
+      5,
+      1
+    ]
+  ],
+  "items": [
+    [
+      1,
+      100
+    ],
+    [
+      30,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

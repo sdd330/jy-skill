@@ -1,0 +1,60 @@
+{
+  "id": 8,
+  "name": "黄蓉",
+  "sexual": 0,
+  "pic": 8,
+  "modelKey": "huangrong",
+  "maxHp": 160,
+  "maxMp": 120,
+  "hpInc": 8,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 25,
+  "agility": 35,
+  "defence": 20,
+  "heal": 15,
+  "usePoison": 10,
+  "dePoison": 10,
+  "antiPoison": 5,
+  "fist": 30,
+  "sword": 20,
+  "blade": 0,
+  "exotic": 40,
+  "hiddenWeapon": 30,
+  "martialKnowledge": 35,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 95,
+  "morality": 60,
+  "reputation": 20,
+  "weapon": 0,
+  "armor": 23,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      14,
+      1
+    ],
+    [
+      50,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      200
+    ],
+    [
+      30,
+      10
+    ],
+    [
+      33,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "射雕英雄传"
+}

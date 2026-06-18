@@ -1,0 +1,47 @@
+{
+  "id": 32,
+  "name": "程英",
+  "sexual": 0,
+  "pic": 32,
+  "modelKey": "chengying",
+  "maxHp": 140,
+  "maxMp": 100,
+  "hpInc": 7,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 25,
+  "agility": 28,
+  "defence": 18,
+  "heal": 10,
+  "usePoison": 0,
+  "dePoison": 5,
+  "antiPoison": 0,
+  "fist": 15,
+  "sword": 30,
+  "blade": 0,
+  "exotic": 15,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 20,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 75,
+  "morality": 85,
+  "reputation": 15,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [],
+  "items": [
+    [
+      1,
+      80
+    ],
+    [
+      30,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣"
+}

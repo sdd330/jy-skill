@@ -1,0 +1,48 @@
+{
+  "id": 200,
+  "name": "山贼",
+  "sexual": 1,
+  "pic": 200,
+  "modelKey": "bandit",
+  "maxHp": 80,
+  "maxMp": 20,
+  "hpInc": 5,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 15,
+  "agility": 10,
+  "defence": 10,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 10,
+  "sword": 0,
+  "blade": 15,
+  "exotic": 0,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 5,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 20,
+  "morality": 10,
+  "reputation": 0,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      1,
+      1
+    ]
+  ],
+  "items": [
+    [
+      1,
+      20
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "通用敌人"
+}

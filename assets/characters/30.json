@@ -1,0 +1,52 @@
+{
+  "id": 30,
+  "name": "霍都",
+  "sexual": 1,
+  "pic": 30,
+  "modelKey": "huodu",
+  "maxHp": 180,
+  "maxMp": 100,
+  "hpInc": 9,
+  "level": 2,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 35,
+  "agility": 28,
+  "defence": 25,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 30,
+  "sword": 0,
+  "blade": 35,
+  "exotic": 15,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 15,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 55,
+  "morality": 20,
+  "reputation": 15,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      2,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      100
+    ],
+    [
+      30,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣"
+}

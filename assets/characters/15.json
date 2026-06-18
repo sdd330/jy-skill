@@ -1,0 +1,56 @@
+{
+  "id": 15,
+  "name": "张三丰",
+  "sexual": 1,
+  "pic": 15,
+  "modelKey": "zhangsanfeng",
+  "maxHp": 450,
+  "maxMp": 280,
+  "hpInc": 20,
+  "level": 8,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 60,
+  "agility": 45,
+  "defence": 60,
+  "heal": 40,
+  "usePoison": 0,
+  "dePoison": 30,
+  "antiPoison": 30,
+  "fist": 70,
+  "sword": 60,
+  "blade": 0,
+  "exotic": 50,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 70,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 95,
+  "morality": 95,
+  "reputation": 100,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      18,
+      5
+    ],
+    [
+      97,
+      5
+    ]
+  ],
+  "items": [
+    [
+      1,
+      2000
+    ],
+    [
+      32,
+      10
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

@@ -1,0 +1,60 @@
+{
+  "id": 5,
+  "name": "郭靖",
+  "sexual": 1,
+  "pic": 5,
+  "modelKey": "guojing",
+  "maxHp": 280,
+  "maxMp": 130,
+  "hpInc": 14,
+  "level": 2,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 45,
+  "agility": 20,
+  "defence": 35,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 50,
+  "sword": 30,
+  "blade": 40,
+  "exotic": 10,
+  "hiddenWeapon": 20,
+  "martialKnowledge": 20,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 40,
+  "morality": 95,
+  "reputation": 40,
+  "weapon": 0,
+  "armor": 22,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      12,
+      2
+    ],
+    [
+      13,
+      2
+    ],
+    [
+      14,
+      1
+    ]
+  ],
+  "items": [
+    [
+      1,
+      120
+    ],
+    [
+      31,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "射雕英雄传"
+}

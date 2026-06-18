@@ -1,0 +1,56 @@
+{
+  "id": 4,
+  "name": "令狐冲",
+  "sexual": 1,
+  "pic": 4,
+  "modelKey": "linghuchong",
+  "maxHp": 220,
+  "maxMp": 120,
+  "hpInc": 11,
+  "level": 2,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 40,
+  "agility": 30,
+  "defence": 25,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 10,
+  "sword": 60,
+  "blade": 0,
+  "exotic": 10,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 25,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 75,
+  "morality": 70,
+  "reputation": 25,
+  "weapon": 12,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      10,
+      3
+    ],
+    [
+      11,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      150
+    ],
+    [
+      30,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "笑傲江湖"
+}
