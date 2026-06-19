@@ -19,6 +19,14 @@ import {
   getInventory,
   getSkills,
   getLocationInfo,
+  getLocationDetail,
+  getOptions,
+  resolveOption,
+  chooseDialog,
+  getNpcContext,
+  buildChoicePrompt,
+  buildChoicePromptFromTalk,
+  loadOrCreateGameForUser,
   restartGame,
   advanceWeek,
   loadGameState,
@@ -29,6 +37,7 @@ import {
 } from './game-engine';
 import { calculateMpCost, getExpForLevel } from './game-logic';
 import * as configLoader from './config-loader';
+import * as eventEngine from './event-engine';
 import {
   validateAssets,
   getMap,
@@ -482,7 +491,7 @@ describe('game-engine coverage', () => {
       npcDialogs: {},
     });
     state.location = '荒原';
-    expect(getLocationInfo(state)).toBe('📍 荒原');
+    expect(getLocationInfo(state)).toContain('📍 荒原');
   });
 
   it('getLocationInfo lists connections, npcs, shops, and danger hint', () => {
@@ -1189,5 +1198,445 @@ describe('game-engine coverage', () => {
     useSkillInBattle(state, battle.enemies!, '基本拳法', 0);
     expect(state.character.skillLevels['基本拳法']).toBe(2);
     expect(state.character.skillExp['基本拳法']).toBe(3);
+  });
+
+  it('getLocationDetail returns structured location data', () => {
+    const state = createNewGame('主角');
+    const detail = getLocationDetail(state);
+    expect(detail.name).toBe('小村');
+    expect(detail.description).toContain('村落');
+    expect(detail.npcs.some((n) => n.name === '村长')).toBe(true);
+  });
+
+  it('getOptions lists talk, move, shop, and utility actions', () => {
+    const state = createNewGame('主角');
+    const options = getOptions(state);
+    expect(options.some((o) => o.id === 'talk_村长')).toBe(true);
+    expect(options.some((o) => o.id === 'move_平安镇')).toBe(true);
+    expect(options.some((o) => o.id === 'buy_金创药')).toBe(true);
+    expect(options.some((o) => o.id === 'status')).toBe(true);
+  });
+
+  it('resolveOption dispatches talk and move actions', () => {
+    const state = createNewGame('主角');
+    const talk = resolveOption(state, 'talk_村长');
+    expect(talk.action).toBe('talk');
+    expect(talk.result && typeof talk.result === 'object' && 'success' in talk.result).toBe(true);
+    if (talk.result && typeof talk.result === 'object' && 'success' in talk.result) {
+      expect(talk.result.success).toBe(true);
+    }
+
+    const move = resolveOption(state, 'move_平安镇');
+    expect(move.action).toBe('move');
+    expect(state.location).toBe('平安镇');
+  });
+
+  it('resolveOption handles numeric shortcut flow via option ids', () => {
+    const state = createNewGame('主角');
+    const options = getOptions(state);
+    const first = options[0];
+    const resolved = resolveOption(state, first.id);
+    expect(['talk', 'move', 'shop', 'interact', 'explore', 'rest', 'status']).toContain(
+      resolved.action,
+    );
+  });
+
+  it('talkTo returns npc card with persona and knowledge', () => {
+    const state = createNewGame('主角');
+    const result = talkTo(state, '村长');
+    expect(result.success).toBe(true);
+    expect(result.npc?.name).toBe('村长');
+    expect(result.npc?.persona).toBeTruthy();
+    expect(result.npc?.knowledge?.length).toBeGreaterThan(0);
+    expect(result.choices?.length).toBeGreaterThan(0);
+  });
+
+  it('chooseDialog follows village_elder quest branch', () => {
+    const state = createNewGame('主角');
+    const talk = talkTo(state, '村长');
+    expect(talk.dialogId).toBe('village_elder');
+
+    const quest = chooseDialog(state, 'village_elder', 0);
+    expect(quest.success).toBe(true);
+    expect(quest.message).toContain('山洞');
+
+    const accept = chooseDialog(state, 'village_quest', 0);
+    expect(accept.success).toBe(true);
+    expect(state.flags.cave_quest).toBe(true);
+  });
+
+  it('createNewGame triggers village_start auto event', () => {
+    deleteSave();
+    const state = createNewGame('主角');
+    expect(state.flags.village_visited).toBe(true);
+  });
+
+  it('moveTo triggers auto events on first cave visit', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const state = createNewGame('主角');
+    state.flags.cave_entered = false;
+    moveTo(state, '山洞');
+    expect(state.flags.cave_entered).toBe(true);
+  });
+
+  it('resolveOption interact grants cave treasure once', () => {
+    const state = createNewGame('主角');
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    moveTo(state, '山洞');
+    const resolved = resolveOption(state, 'interact_cave_treasure');
+    expect(resolved.action).toBe('interact');
+    expect(state.flags.cave_treasure).toBe(true);
+  });
+
+  it('getNpcContext returns constraints for LLM-NPC mode', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const state = createNewGame('主角');
+    expect(getNpcContext(state, '黄药师')).toBeNull();
+
+    moveTo(state, '平安镇');
+    moveTo(state, '桃花岛');
+    const ctx2 = getNpcContext(state, '黄药师');
+    expect(ctx2?.card.name).toBe('黄药师');
+    expect(ctx2?.constraints.length).toBeGreaterThan(0);
+    expect(ctx2?.availableActions).toContain('talk');
+  });
+
+  it('talkTo triggers cave_master_quest at level 5', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const state = createNewGame('主角');
+    state.character.level = 5;
+    moveTo(state, '山洞');
+    const result = talkTo(state, '神秘人');
+    expect(state.flags.cave_master_met).toBe(true);
+    expect(result.events?.some((e) => e.type === 'addItem')).toBe(true);
+  });
+
+  it('getLocationDetail handles unknown map', () => {
+    const state = createNewGame('主角');
+    state.location = '虚空';
+    const detail = getLocationDetail(state);
+    expect(detail.name).toBe('虚空');
+    expect(detail.connections).toEqual([]);
+    expect(detail.npcs).toEqual([]);
+  });
+
+  it('getOptions returns status-only when dead or map unknown', () => {
+    const dead = createNewGame('主角');
+    dead.character.hp = 0;
+    expect(getOptions(dead)).toEqual([{ id: 'status', label: '查看状态', category: 'status' }]);
+
+    const unknown = createNewGame('主角');
+    unknown.location = '虚空';
+    expect(getOptions(unknown)).toEqual([{ id: 'status', label: '查看状态', category: 'status' }]);
+  });
+
+  it('getOptions includes interact events when conditions met', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const state = createNewGame('主角');
+    moveTo(state, '山洞');
+    expect(getOptions(state).some((o) => o.id === 'interact_cave_treasure')).toBe(true);
+  });
+
+  it('resolveOption dispatches buy, explore, rest, status, dialog, and unknown', () => {
+    const state = createNewGame('主角');
+    const buy = resolveOption(state, 'buy_金创药');
+    expect(buy.action).toBe('buy');
+    expect(buy.result && typeof buy.result === 'object' && 'success' in buy.result).toBe(true);
+
+    const explore = resolveOption(state, 'explore');
+    expect(explore.action).toBe('explore');
+
+    const restResult = resolveOption(state, 'rest');
+    expect(restResult.action).toBe('rest');
+
+    const status = resolveOption(state, 'status');
+    expect(status.action).toBe('status');
+    expect(typeof status.result).toBe('string');
+
+    const dialog = resolveOption(state, 'dialog:village_elder:0');
+    expect(dialog.action).toBe('dialog');
+    expect(dialog.result && typeof dialog.result === 'object' && 'success' in dialog.result).toBe(
+      true,
+    );
+
+    const unknown = resolveOption(state, 'not_a_real_option');
+    expect(unknown.action).toBe('unknown');
+  });
+
+  it('resolveOption paginate uses buildChoicePrompt with page', () => {
+    const state = createNewGame('主角');
+    const page0 = buildChoicePrompt(state);
+    const paginated = resolveOption(state, '__page_0');
+    expect(paginated.action).toBe('paginate');
+    expect(
+      paginated.result &&
+        typeof paginated.result === 'object' &&
+        'type' in paginated.result &&
+        paginated.result.type === 'player_choice',
+    ).toBe(true);
+    expect(page0.type).toBe('player_choice');
+  });
+
+  it('buildChoicePromptFromTalk handles dialog and fallback prompts', () => {
+    const state = createNewGame('主角');
+    const talk = talkTo(state, '村长');
+    const withChoices = buildChoicePromptFromTalk(state, talk);
+    expect(withChoices.dialogId).toBe('village_elder');
+    expect(withChoices.choices.some((c) => c.value.startsWith('dialog:'))).toBe(true);
+
+    const plain = buildChoicePromptFromTalk(state, {
+      success: true,
+      message: '闲聊',
+    });
+    expect(plain.type).toBe('player_choice');
+    expect(plain.message).toBe('闲聊');
+  });
+
+  it('loadOrCreateGameForUser delegates to persistence', () => {
+    deleteSave('engine_user_a');
+    const { state, isNewGame } = loadOrCreateGameForUser('engine_user_a', '侠客');
+    expect(isNewGame).toBe(true);
+    expect(state.character.name).toBe('侠客');
+    deleteSave('engine_user_a');
+  });
+
+  it('chooseDialog rejects missing dialog and invalid choice index', () => {
+    const state = createNewGame('主角');
+    expect(chooseDialog(state, 'missing_dialog', 0).message).toBe('对话不存在');
+    expect(chooseDialog(state, 'village_elder', 99).message).toBe('无效的选项');
+  });
+
+  it('getNpcContext includes canGive constraints when configured', () => {
+    vi.spyOn(configLoader, 'getNpcCard').mockReturnValue({
+      name: '赠礼人',
+      persona: '慷慨',
+      knowledge: [],
+      canGive: ['金创药'],
+    });
+    vi.spyOn(configLoader, 'getMap').mockReturnValue({
+      npcs: ['赠礼人'],
+      shops: [],
+      connections: [],
+      npcDialogs: {},
+    });
+    const state = createNewGame('主角');
+    state.location = '测试点';
+    const ctx = getNpcContext(state, '赠礼人');
+    expect(ctx?.availableActions).toContain('give');
+    expect(ctx?.constraints.some((c) => c.includes('金创药'))).toBe(true);
+  });
+
+  it('covers remaining branch paths for full coverage', () => {
+    const state = createNewGame('主角');
+    const origGetNpcCard = configLoader.getNpcCard;
+    const origGetDialog = configLoader.getDialog;
+
+    vi.spyOn(configLoader, 'getNpcCard').mockImplementation((loc, name) => {
+      if (name === '空壳') {
+        return { name: '空壳', persona: {}, knowledge: [] };
+      }
+      return origGetNpcCard(loc, name);
+    });
+    vi.spyOn(configLoader, 'getMap').mockReturnValue({
+      npcs: ['空壳', '村长'],
+      shops: ['金创药'],
+      connections: ['平安镇'],
+      npcDialogs: { 村长: 'village_elder' },
+    });
+    state.location = '测试村';
+    const detail = getLocationDetail(state);
+    expect(detail.npcs.find((n) => n.name === '空壳')?.persona).toBe('');
+
+    vi.spyOn(configLoader, 'getLocationMeta').mockReturnValue({
+      description: '',
+      atmosphere: '',
+      dangerLevel: 'safe' as const,
+    });
+    expect(getLocationInfo(state)).not.toContain('undefined');
+
+    state.inventory.silver = 0;
+    const poorOptions = getOptions(state);
+    expect(poorOptions.find((o) => o.id === 'buy_金创药')?.hint).toContain('需');
+
+    vi.spyOn(configLoader, 'getItem').mockReturnValue(undefined);
+    const noPriceOptions = getOptions(createNewGame('主角'));
+    expect(noPriceOptions.some((o) => o.id.startsWith('buy_'))).toBe(true);
+
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const cave = createNewGame('主角');
+    moveTo(cave, '山洞');
+    cave.flags.cave_treasure = true;
+    expect(getOptions(cave).some((o) => o.id === 'interact_cave_treasure')).toBe(false);
+
+    expect(resolveOption(createNewGame('主角'), '__page_bad').action).toBe('unknown');
+
+    vi.spyOn(eventEngine, 'runTriggeredEvents').mockReturnValue([{ type: 'message', message: '' }]);
+    const interact = resolveOption(createNewGame('主角'), 'interact_cave_treasure');
+    expect(interact.action).toBe('interact');
+    expect(
+      interact.result &&
+        typeof interact.result === 'object' &&
+        'message' in interact.result &&
+        interact.result.message,
+    ).toContain('探索');
+
+    vi.restoreAllMocks();
+    resetConfigsForTest();
+    initConfigs();
+
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const taohua = createNewGame('主角');
+    moveTo(taohua, '平安镇');
+    moveTo(taohua, '桃花岛');
+    taohua.character.level = 1;
+    const lowCtx = getNpcContext(taohua, '黄药师');
+    expect(lowCtx?.constraints.some((c) => c.includes('未达标'))).toBe(true);
+    expect(lowCtx?.constraints.some((c) => c.includes('说话风格'))).toBe(true);
+    expect(lowCtx?.constraints.some((c) => c.includes('厌恶'))).toBe(true);
+
+    taohua.character.skills.push('弹指神通');
+    taohua.character.level = 10;
+    taohua.character.attributes.iq = 99;
+    const taughtCtx = getNpcContext(taohua, '黄药师');
+    expect(taughtCtx?.availableActions).not.toContain('teach');
+
+    vi.spyOn(eventEngine, 'runTriggeredEvents').mockReturnValue([
+      { type: 'message', message: '触发对话事件' },
+    ]);
+    const talkWithEvents = talkTo(createNewGame('主角'), '村长');
+    expect(talkWithEvents.events?.length).toBeGreaterThan(0);
+
+    vi.spyOn(configLoader, 'getDialog').mockImplementation((id: string) => {
+      if (id === 'broken_next') {
+        return {
+          id: 'broken_next',
+          speaker: '测',
+          text: '选',
+          choices: [{ text: '跳', nextId: 'missing_dialog' }],
+        };
+      }
+      if (id === 'with_actions') {
+        return {
+          id: 'with_actions',
+          speaker: '测',
+          text: '终',
+          choices: [
+            {
+              text: '完成',
+              nextId: '',
+              actions: [{ type: 'setFlag', params: { flag: 'done', value: true } }],
+            },
+          ],
+        };
+      }
+      if (id === 'branch_with_next') {
+        return {
+          id: 'branch_with_next',
+          speaker: '测',
+          text: '前',
+          choices: [
+            {
+              text: '继续',
+              nextId: 'branch_target',
+              actions: [{ type: 'setFlag', params: { flag: 'step', value: true } }],
+            },
+          ],
+        };
+      }
+      if (id === 'branch_target') {
+        return { id: 'branch_target', speaker: '测', text: '后', choices: [] };
+      }
+      return origGetDialog(id);
+    });
+    const dialogState = createNewGame('主角');
+    expect(chooseDialog(dialogState, 'broken_next', 0).message).toBe('你结束了对话。');
+
+    const actionEnd = chooseDialog(createNewGame('主角'), 'with_actions', 0);
+    expect(actionEnd.success).toBe(true);
+    expect(actionEnd.events?.length).toBeGreaterThan(0);
+
+    const withNext = chooseDialog(createNewGame('主角'), 'branch_with_next', 0);
+    expect(withNext.dialogId).toBe('branch_target');
+    expect(withNext.events?.length).toBeGreaterThan(0);
+
+    const questState = createNewGame('主角');
+    talkTo(questState, '村长');
+    chooseDialog(questState, 'village_elder', 0);
+    const decline = chooseDialog(questState, 'village_quest', 1);
+    expect(decline.success).toBe(true);
+    expect(decline.events).toBeUndefined();
+
+    vi.spyOn(configLoader, 'getLocationMeta').mockReturnValue({
+      description: '',
+      atmosphere: '',
+      dangerLevel: 'safe' as const,
+    });
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    vi.spyOn(eventEngine, 'runTriggeredEvents').mockReturnValue([]);
+    const moved = createNewGame('主角');
+    const moveResult = moveTo(moved, '平安镇');
+    expect(moveResult.message).toBe('你来到了平安镇');
+  });
+
+  it('covers final branch gaps in location detail and npc context', () => {
+    const origGetNpcCard = configLoader.getNpcCard;
+    vi.spyOn(configLoader, 'getNpcCard').mockImplementation((loc, name) => {
+      if (name === '无卡人') return undefined;
+      if (name === '简人设') {
+        return { name: '简人设', persona: { archetype: '路人' }, knowledge: [] };
+      }
+      return origGetNpcCard(loc, name);
+    });
+    vi.spyOn(configLoader, 'getMap').mockReturnValue({
+      npcs: ['无卡人', '简人设'],
+      shops: [],
+      connections: [],
+      npcDialogs: {},
+    });
+    const state = createNewGame('主角');
+    state.location = '边缘村';
+    const detail = getLocationDetail(state);
+    expect(detail.npcs.find((n) => n.name === '无卡人')?.persona).toBeUndefined();
+
+    const ctx = getNpcContext(state, '简人设');
+    expect(ctx?.constraints.some((c) => c.includes('说话风格'))).toBe(false);
+    expect(ctx?.constraints.some((c) => c.includes('厌恶'))).toBe(false);
+
+    vi.restoreAllMocks();
+    resetConfigsForTest();
+    initConfigs();
+
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const cave = createNewGame('主角');
+    moveTo(cave, '山洞');
+    cave.character.level = 1;
+    const masterCtx = getNpcContext(cave, '神秘人');
+    expect(masterCtx?.constraints.some((c) => c.includes('等级3') && !c.includes('资质'))).toBe(
+      true,
+    );
+
+    cave.flags.cave_treasure = true;
+    getOptions(cave);
+
+    vi.spyOn(configLoader, 'getNpcCard').mockReturnValue({
+      name: '严师',
+      persona: '严苛',
+      knowledge: [],
+      canTeach: ['测试功'],
+      conditions: { teach: { minIQ: 80 } },
+    });
+    vi.spyOn(configLoader, 'getMap').mockReturnValue({
+      npcs: ['严师'],
+      shops: [],
+      connections: [],
+      npcDialogs: {},
+    });
+    const strictState = createNewGame('主角');
+    strictState.location = '师门';
+    strictState.character.attributes.iq = 10;
+    const strictCtx = getNpcContext(strictState, '严师');
+    expect(strictCtx?.constraints.some((c) => c.includes('等级1') && c.includes('资质80'))).toBe(
+      true,
+    );
   });
 });

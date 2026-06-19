@@ -13,6 +13,7 @@ const REQUIRED_FILES = [
   'LICENSE',
   'references/agent-handbook.md',
   'references/player-guide.md',
+  'references/host-adapters.md',
 ];
 
 const LINK_SCAN_FILES = ['SKILL.md', 'README.md', 'AGENTS.md'];

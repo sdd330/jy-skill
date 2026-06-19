@@ -32,7 +32,15 @@ moveTo 若返回 encounter → 必须 startBattle 并打完或玩家死亡
 战斗后 isDead(state) ? → 死亡结算 + restartGame()
   ↓
 getStatus(state) 生成状态栏，附在回复末尾
+  ↓
+buildChoicePrompt(state) → Host 渲染点选 UI（MCP Elicitation / AskQuestion / 飞书卡片）
+  ↓
+玩家点选 → resolveOption(state, optionId)
 ```
+
+**标准契约**：优先 `buildChoicePrompt` + Host UI；详见 [host-adapters.md](host-adapters.md)。
+
+**数字 fallback**：无 UI 能力时，Agent 可展示编号列表；玩家输入 `1`–`9` → `resolveOption(state, getOptions(state)[n-1].id)`。
 
 **复合指令**：按逻辑顺序逐步调用。例：「去平安镇买铁剑并装备」→ `moveTo` → 若 `encounter` 先战斗 → `buyItem` → `equipItem`。
 
@@ -104,11 +112,29 @@ getStatus(state) 生成状态栏，附在回复末尾
 ### 3.7 商店与对话
 
 - **`buyItem`**：物品须在**当前地点** `shops` 列表中，且银两 ≥ 价格。
-- **`talkTo`**：NPC 名须与当前地点 `npcs` **完全一致**。
+- **`talkTo`**：NPC 名须与当前地点 `npcs` **完全一致**；返回 `npc` 角色卡、`choices?`、`context?`、`events?`。
 - **`talkTo(state, 'random')`**：随机与在场 NPC 对话。
-- 有配置对话的 NPC 返回「说话者：「台词」」格式。
+- **`chooseDialog(state, dialogId, choiceIndex)`**：推进对话分支，执行 choice actions（setFlag/addItem/battle/heal）。
+- 有配置对话的 NPC 返回「说话者：「台词」」格式；Agent 基于 `npc.persona` 扩写，数值以引擎为准。
 
-### 3.8 武功
+### 3.8 事件与任务（flags）
+
+- `game-config.json` 中 `events` 已由 `event-engine.ts` 接入。
+- **`auto` 事件**：`moveTo` 抵达、`createNewGame` 首次落点触发（如小村 `village_start`）。
+- **`interact` 事件**：通过 `getOptions` 生成探索选项，`resolveOption` 触发（如山洞 `cave_treasure`）。
+- **`talk` 事件**：`talkTo` 时按 NPC 名与条件触发（如 `cave_master_quest`）。
+- `state.flags` 持久化；条件 `flag` / `level` / `item` 由引擎判定。
+
+### 3.9 行动选项与 PlayerChoicePrompt
+
+- **`buildChoicePrompt(state)`**：生成 Host 无关的 `PlayerChoicePrompt`（`choices[].value` = `ActionOption.id`）。
+- **`toMcpElicitationParams(prompt)`** / **`fromElicitationResponse(content)`**：MCP Elicitation 映射。
+- **`toFeishuInteractiveCard(prompt)`**：飞书交互卡片 JSON。
+- **`getOptions(state)`**：内部行动列表；与 `buildChoicePrompt().choices[].value` 一一对应。
+- **`resolveOption(state, optionId)`**：按 id 前缀分发到 talk/move/buy/interact/rest/status/explore/paginate/dialog。
+- 每轮回复末尾 MUST 输出 `buildChoicePrompt`；Host 有 UI 时禁止让玩家打字选行动。
+
+### 3.10 武功
 
 - 新角色默认：**基本拳法**（不耗内力）。
 - **`learnSkill`**：武功须存在于 `assets/skills.json`；已学会则失败。
@@ -167,12 +193,14 @@ while (尚有敌人 hp > 0 && !isDead(state)) {
 
 | 函数 | 返回 | 说明 |
 |------|------|------|
-| `loadOrCreateGame(createNewGame, name?)` | `{ state, isNewGame }` | 有档续玩，无档新建落盘 |
-| `loadGameState()` | `GameState \| null` | 仅读取，不创建 |
+| `loadOrCreateGame(createNewGame, name?)` | `{ state, isNewGame }` | 单用户默认档 |
+| `loadOrCreateGameForUser(userId, createNewGame, name?)` | `{ state, isNewGame }` | 多用户 `save/users/{userId}.json` |
+| `setSaveUserId(userId \| null)` | void | 切换当前会话存档目标 |
+| `loadGameState(userId?)` | `GameState \| null` | 仅读取，不创建 |
 | `saveGameState(state)` | void | 幂等手动存档 |
 | `deleteSave()` | void | 仅删档；重开请用 `restartGame` |
 | `restartGame(name?)` | `GameState` | 删档 + 新建 + 落盘 |
-| `createNewGame(name)` | `GameState` | 仅内存，不自动存档 |
+| `createNewGame(name)` | `GameState` | 新建并触发 auto 事件、落盘 |
 
 ### 查询
 
@@ -181,14 +209,24 @@ while (尚有敌人 hp > 0 && !isDead(state)) {
 | `getStatus(state)` | 状态栏文本（含经验、中毒/受伤行） |
 | `getInventory(state)` | 银两 + 物品列表 |
 | `getSkills(state)` | 已学武功 |
-| `getLocationInfo(state)` | 当前地点：可前往、NPC、商店、险地提示 |
+| `getLocationInfo(state)` | 当前地点文本（含描述、险地提示） |
+| `getLocationDetail(state)` | 结构化地点：description、atmosphere、dangerLevel、npcs |
+| `getOptions(state)` | 当前可选行动列表（与 buildChoicePrompt 一致） |
+| `buildChoicePrompt(state, ctx?)` | `PlayerChoicePrompt` 标准契约 |
+| `buildChoicePromptFromTalk(talkResult, state)` | 对话分支选项契约 |
+| `toMcpElicitationParams(prompt)` | MCP elicitation/create 参数 |
+| `fromElicitationResponse(content)` | Elicitation 回传 → optionId |
+| `toFeishuInteractiveCard(prompt)` | 飞书交互卡片 JSON |
+| `getNpcContext(state, npc)` | LLM-NPC 约束包：card、constraints、availableActions |
 
 ### 探索与交互
 
 | 函数 | 返回 | 失败常见原因 |
 |------|------|--------------|
-| `moveTo(state, dest)` | `{ success, message, encounter? }` | 不相连、无处可去 |
-| `talkTo(state, npc)` | `{ success, message }` | NPC 不在场 |
+| `moveTo(state, dest)` | `{ success, message, encounter?, events?, locationDetail? }` | 不相连、无处可去 |
+| `talkTo(state, npc)` | `TalkResult`（含 `npc?`, `choices?`, `context?`, `events?`） | NPC 不在场 |
+| `chooseDialog(state, dialogId, index)` | `TalkResult` | 无效选项 |
+| `resolveOption(state, optionId)` | `{ action, result }` | 未知 optionId |
 | `rest(state)` | `{ success, message }` | 一般总成功 |
 | `buyItem(state, item)` | `{ success, message }` | 非本店、无货、银两不足 |
 | `useItem(state, item)` | `{ success, message }` | 无物品、非消耗品、无收益 |

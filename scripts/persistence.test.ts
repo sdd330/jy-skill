@@ -6,6 +6,9 @@ import {
   saveGameState,
   deleteSave,
   loadOrCreateGame,
+  loadOrCreateGameForUser,
+  setSaveUserId,
+  getSaveUserId,
   getSavePath,
 } from './persistence';
 import { createNewGame } from './game-engine';
@@ -487,5 +490,71 @@ describe('persistence', () => {
     expect(loaded!.character.stamina).toBe(100);
     expect(loaded!.character.poison).toBe(0);
     expect(loaded!.location).toBe('小村');
+  });
+
+  describe('multi-user saves', () => {
+    const USER_A = 'ou_test_user_a';
+    const USER_B = 'ou_test_user_b';
+
+    afterEach(() => {
+      setSaveUserId(null);
+      deleteSave(USER_A);
+      deleteSave(USER_B);
+    });
+
+    it('stores separate saves per userId', () => {
+      resetConfigsForTest();
+      initConfigs();
+
+      const { state: stateA, isNewGame: newA } = loadOrCreateGameForUser(
+        USER_A,
+        createNewGame,
+        '甲',
+      );
+      expect(newA).toBe(true);
+      stateA.character.level = 3;
+      saveGameState(stateA, USER_A);
+
+      const { state: stateB, isNewGame: newB } = loadOrCreateGameForUser(
+        USER_B,
+        createNewGame,
+        '乙',
+      );
+      expect(newB).toBe(true);
+      stateB.character.level = 7;
+      saveGameState(stateB, USER_B);
+
+      const loadedA = loadGameState(USER_A);
+      const loadedB = loadGameState(USER_B);
+      expect(loadedA?.character.name).toBe('甲');
+      expect(loadedA?.character.level).toBe(3);
+      expect(loadedB?.character.name).toBe('乙');
+      expect(loadedB?.character.level).toBe(7);
+      expect(getSavePath(USER_A)).not.toBe(getSavePath(USER_B));
+    });
+
+    it('sanitizes unsafe userId in save filename', () => {
+      const unsafe = 'user/with\\spaces';
+      const path = getSavePath(unsafe);
+      expect(path.endsWith('user_with_spaces.json')).toBe(true);
+    });
+
+    it('setSaveUserId routes default saveGameState to user file', () => {
+      resetConfigsForTest();
+      initConfigs();
+      setSaveUserId(USER_A);
+      const state = createNewGame('会话用户');
+      saveGameState(state);
+      expect(existsSync(getSavePath(USER_A))).toBe(true);
+      const loaded = loadGameState(USER_A);
+      expect(loaded?.character.name).toBe('会话用户');
+    });
+
+    it('getSaveUserId returns current session user', () => {
+      setSaveUserId(null);
+      expect(getSaveUserId()).toBeNull();
+      setSaveUserId(USER_A);
+      expect(getSaveUserId()).toBe(USER_A);
+    });
   });
 });

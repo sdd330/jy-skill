@@ -15,6 +15,8 @@ API 与完整规则见 [SKILL.md](SKILL.md)、[references/agent-handbook.md](ref
 - **数值准确**：所有计算必须遵循 `scripts/game-logic.ts`；禁止编造伤害、经验、价格
 - **单一入口**：只通过 `scripts/game-engine.ts` 调用游戏逻辑
 - **新人友好**：首登与求帮助时给出可执行建议，勿堆砌函数名或 API 术语
+- **选项契约优先**：每轮调用 `buildChoicePrompt(state)`，由 Host 渲染点选 UI（见 [host-adapters.md](references/host-adapters.md)）
+- **NPC 叙事**：`talkTo` 返回的 `npc.persona` / `knowledge` 用于扩写台词，但物品/武功/flag 以引擎为准
 
 ## 新玩家首登
 
@@ -26,9 +28,27 @@ API 与完整规则见 [SKILL.md](SKILL.md)、[references/agent-handbook.md](ref
    - 与村长或商人搭话，打听江湖消息；
    - 攒够脚程后前往平安镇，购置兵刃防具；
    - 说「查看背包」或「我现在什么状态」，熟悉自身家当。
-4. 末尾附带标准**状态栏**（见下文输出格式）。
+4. 末尾附带标准**状态栏**与**编号选项**（见下文输出格式）。
 
 若玩家是**续玩**（`isNewGame: false`），简短交代「你回到了江湖之中」并概括当前位置与近况即可，不必重复完整新人引导。
+
+## 行动选项（PlayerChoicePrompt）
+
+**每轮行动结束后 MUST 提供可点选选项**（在状态栏之前），禁止让玩家打字或输入数字选行动（除非 Host 无 UI 能力）。
+
+1. 调用 `buildChoicePrompt(state)` 得到标准契约（`type: 'player_choice'`）
+2. **Cursor**：若 AskQuestion 可用，用 `choices[].value` / `choices[].label` 映射为点选选项
+3. **MCP Host**：用 `toMcpElicitationParams(prompt)` 触发 Elicitation 单选 UI
+4. **飞书/OpenClaw**：用 `toFeishuInteractiveCard(prompt)` 或 `build-feishu-card.ts` 发交互卡片
+5. 用户点选 → `resolveOption(state, optionId)`；Elicitation 回传 → `fromElicitationResponse` → `resolveOption`
+
+**Fallback**（仅无 UI 时）：`getOptions` + 编号 1/2/3 文本列表。
+
+**对话分支**：`talkTo` 含 `choices` 时用 `buildChoicePromptFromTalk`；选中 `dialog:*` value 后 `resolveOption` 自动 `chooseDialog`。
+
+**事件**：`moveTo` / `talkTo` 返回 `events` 时须优先叙述，再展示新选项。
+
+详见 [host-adapters.md](references/host-adapters.md)。
 
 ## 帮助指令
 
@@ -36,11 +56,11 @@ API 与完整规则见 [SKILL.md](SKILL.md)、[references/agent-handbook.md](ref
 
 1. **一句话**：江湖行事，只需用中文告诉我想做什么，不必记固定命令。
 2. **常用说法**（各举一例）：移动（如「去平安镇」）、对话（如「和村长聊聊」）、购物（如「买铁剑」）、战斗（如「攻击山贼」）、查看（如「看背包」）、休息（如「休息」）。
-3. **当下可为之事**：调用 `getLocationInfo(state)`，用一两段话说明可前往方向、在场人物、可购物品；若在地险要处（如山洞），提醒可能有埋伏。
+3. **当下可为之事**：调用 `getLocationDetail(state)` 与 `getOptions(state)`，用一两段话说明环境、可前往方向、在场人物；若在地险要处提醒可能有埋伏。
 4. 提示更完整说明见玩家手册；若玩家需要，可简要概括地图与战斗要点（相邻移动、战前备药、进洞可能遇敌）。
-5. 末尾附带**状态栏**。
+5. 末尾附带**编号选项**与**状态栏**。
 
-帮助场景下可调用 `getStatus` / `getInventory` / `getLocationInfo` 辅助叙述，但不要向玩家展示代码或函数调用过程。
+帮助场景下可调用 `getStatus` / `getInventory` / `getLocationDetail` / `getOptions` 辅助叙述，但不要向玩家展示代码或函数调用过程。
 
 ## 游戏流程
 
@@ -69,8 +89,9 @@ saveGameState(state)  // 可选
 
 | 意图 | 注意 |
 |------|------|
-| 移动 | `encounter` 不可忽略；「随便走走」用 `moveTo(state, 'random')` |
-| 对话 | NPC 名须与当前地点一致（如平安镇：守卫、商店老板、客栈老板） |
+| 移动 | `encounter` 不可忽略；「随便走走」用 `moveTo(state, 'random')`；返回 `events` 须叙述 |
+| 对话 | NPC 名须与当前地点一致；基于 `npc.persona` 扩写，数值以引擎为准 |
+| 数字输入（fallback） | 无 UI 时 `1`–`9` → `resolveOption` |
 | 使用物品 | 满状态时引擎拒绝消耗，须如实告知玩家 |
 | 战斗 | 多敌人时按 `enemies[i].hp > 0` 选目标 |
 
@@ -88,7 +109,9 @@ saveGameState(state)  // 可选
 - `getStatus(state)` — 状态栏
 - `getInventory(state)` — 背包
 - `getSkills(state)` — 武功
-- `getLocationInfo(state)` — 帮助/首登时说明附近选项
+- `getLocationInfo(state)` / `getLocationDetail(state)` — 地点信息
+- `buildChoicePrompt(state)` — 标准选项契约（**首选**）
+- `getOptions(state)` — 原始选项列表（适配器内部使用）
 
 ### 5. 死亡与重开
 
@@ -119,9 +142,16 @@ saveGameState(state)  // 可选
 - 每回合简洁有力；多敌人时点名（山贼1、山贼2…）。
 - 升级时可描写任督二脉通畅、功力精进一类意象，等级与属性以引擎为准。
 
+### NPC 对话与 LLM-NPC 模式
+
+- `talkTo` 返回 `npc` 角色卡时，用 `persona`、`knowledge` 丰富描写，但**不可编造**引擎未确认的结果。
+- 调用 `getNpcContext(state, npc)` 获取 `constraints` 硬约束列表，**必须遵守**。
+- NPC 传授武功：仅当 `availableActions` 含 `teach` 且条件满足时，调用 `learnSkill`；否则口头拒绝。
+- NPC 给予物品：须由事件引擎或 `chooseDialog` actions 触发，不可口头编造「送你 XXX」。
+
 ## 输出格式
 
-每次回复末尾附带状态栏（与 `getStatus` 一致）：
+每次回复末尾：**点选选项**（PlayerChoicePrompt / AskQuestion）→ **状态栏**（与 `getStatus` 一致）：
 
 ```
 👤 角色名 | Lv.等级 | 经验: …
@@ -147,4 +177,5 @@ saveGameState(state)  // 可选
 | [agent-handbook.md](references/agent-handbook.md) | 完整规则、API、地图、错误清单 |
 | [SKILL.md](SKILL.md) | Skill 入口与工作流 |
 | [player-guide.md](references/player-guide.md) | 可转述给玩家的 FAQ |
+| [host-adapters.md](references/host-adapters.md) | MCP / Cursor / 飞书选项适配 |
 | [game-design.md](references/game-design.md) | 公式细节 |

@@ -28,24 +28,92 @@ import {
   getSkillAttackAtLevel,
   getDialog,
   getEnemyTemplate,
+  getNpcCard,
+  getLocationMeta,
   isWeapon,
   isArmor,
   isConsumable,
   isSkillBook,
   mapDamageTypeToStaminaCost,
 } from './config-loader';
-import type { GameState, BattleEnemy, Character } from './game-types';
+import type {
+  GameState,
+  BattleEnemy,
+  Character,
+  TalkResult,
+  LocationDetail,
+  ActionOption,
+  ResolveOptionResult,
+  NpcCard,
+  NpcContext,
+  DialogChoice,
+  EventResult,
+  PlayerChoicePrompt,
+  McpElicitationParams,
+  FeishuInteractiveCard,
+} from './game-types';
+import {
+  runTriggeredEvents,
+  getInteractEventsForMap,
+  getInteractEventLabel,
+  getMapDangerHint,
+  processDialogChoiceActions,
+  evaluateConditions,
+} from './event-engine';
 import {
   loadGameState as persistenceLoadGameState,
   saveGameState,
   deleteSave,
   loadOrCreateGame as persistenceLoadOrCreateGame,
+  loadOrCreateGameForUser as persistenceLoadOrCreateGameForUser,
   getSavePath,
+  setSaveUserId,
+  getSaveUserId,
 } from './persistence';
 import type { LoadGameResult } from './persistence';
+import {
+  buildChoicePrompt as buildChoicePromptFromOptions,
+  toMcpElicitationParams,
+  fromElicitationResponse,
+  toFeishuInteractiveCard,
+  feishuCardToMessageContent,
+  parseFeishuButtonValue,
+  parseDialogChoiceValue,
+  parsePaginationValue,
+  isPaginationValue,
+  type BuildChoicePromptContext,
+} from './choice-prompt';
 
-export type { GameState, BattleEnemy, Character, LoadGameResult };
-export { saveGameState, deleteSave, getSavePath };
+export type {
+  GameState,
+  BattleEnemy,
+  Character,
+  LoadGameResult,
+  TalkResult,
+  LocationDetail,
+  ActionOption,
+  ResolveOptionResult,
+  NpcCard,
+  NpcContext,
+  DialogChoice,
+  EventResult,
+  PlayerChoicePrompt,
+  McpElicitationParams,
+  FeishuInteractiveCard,
+};
+export {
+  saveGameState,
+  deleteSave,
+  getSavePath,
+  setSaveUserId,
+  getSaveUserId,
+  toMcpElicitationParams,
+  fromElicitationResponse,
+  toFeishuInteractiveCard,
+  feishuCardToMessageContent,
+  parseFeishuButtonValue,
+};
+export type { BuildChoicePromptContext };
 
 initConfigs();
 
@@ -119,7 +187,7 @@ function buildCharacter(name: string): Character {
 
 export function createNewGame(name: string): GameState {
   const tpl = getTemplates();
-  return {
+  const state: GameState = {
     character: buildCharacter(name),
     team: [],
     inventory: {
@@ -132,6 +200,9 @@ export function createNewGame(name: string): GameState {
     visitedMaps: [tpl.startLocation ?? '小村'],
     completedQuests: [],
   };
+  runTriggeredEvents(state, 'auto', { mapName: state.location });
+  saveGameState(state);
+  return state;
 }
 
 export function loadGameState(): GameState | null {
@@ -175,11 +246,64 @@ export function getStatus(state: GameState): string {
     .join('\n');
 }
 
+function personaToString(persona: NpcCard['persona']): string {
+  if (typeof persona === 'string') return persona;
+  const parts = [persona.archetype, persona.tone].filter(Boolean);
+  return parts.join('，') || '';
+}
+
+function buildNpcCard(location: string, npcName: string): NpcCard | undefined {
+  return getNpcCard(location, npcName);
+}
+
+function dialogToChoices(dialogId: string): DialogChoice[] {
+  const dialog = getDialog(dialogId);
+  if (!dialog?.choices?.length) return [];
+  return dialog.choices.map((c, index) => ({
+    text: c.text,
+    nextId: c.nextId,
+    index,
+  }));
+}
+
+export function getLocationDetail(state: GameState): LocationDetail {
+  const map = getMap(state.location);
+  const meta = getLocationMeta(state.location);
+  if (!map) {
+    return {
+      name: state.location,
+      description: meta.description,
+      atmosphere: meta.atmosphere,
+      dangerLevel: meta.dangerLevel,
+      connections: [],
+      npcs: [],
+      shops: [],
+    };
+  }
+
+  return {
+    name: state.location,
+    description: meta.description,
+    atmosphere: meta.atmosphere,
+    dangerLevel: meta.dangerLevel,
+    connections: [...map.connections],
+    npcs: map.npcs.map((name) => {
+      const card = getNpcCard(state.location, name);
+      return { name, persona: card ? personaToString(card.persona) : undefined };
+    }),
+    shops: [...map.shops],
+  };
+}
+
 export function getLocationInfo(state: GameState): string {
   const map = getMap(state.location);
   if (!map) return '当前位置未知';
 
+  const detail = getLocationDetail(state);
   const lines = [`📍 ${state.location}`];
+  if (detail.description) {
+    lines.push(detail.description);
+  }
   if (map.connections.length > 0) {
     lines.push(`可前往: ${map.connections.join('、')}`);
   }
@@ -189,10 +313,222 @@ export function getLocationInfo(state: GameState): string {
   if (map.shops.length > 0) {
     lines.push(`可购: ${map.shops.join('、')}`);
   }
-  if (map.encounterRate && map.encounterRate > 0) {
-    lines.push('此地行路需当心，或有歹人埋伏');
+  const dangerHint = getMapDangerHint(state.location);
+  if (dangerHint) {
+    lines.push(dangerHint);
   }
   return lines.join('\n');
+}
+
+export function getOptions(state: GameState): ActionOption[] {
+  const alive = assertAlive(state);
+  if (!alive.ok) {
+    return [{ id: 'status', label: '查看状态', category: 'status' }];
+  }
+
+  const map = getMap(state.location);
+  if (!map) {
+    return [{ id: 'status', label: '查看状态', category: 'status' }];
+  }
+
+  const options: ActionOption[] = [];
+
+  for (const npc of map.npcs) {
+    options.push({
+      id: `talk_${npc}`,
+      label: `和${npc}交谈`,
+      category: 'talk',
+    });
+  }
+
+  for (const conn of map.connections) {
+    options.push({
+      id: `move_${conn}`,
+      label: `前往${conn}`,
+      category: 'move',
+    });
+  }
+
+  for (const itemName of map.shops) {
+    const itemCfg = getItem(itemName);
+    const canAfford = state.inventory.silver >= (itemCfg?.price ?? Infinity);
+    options.push({
+      id: `buy_${itemName}`,
+      label: `购买${itemName}`,
+      category: 'shop',
+      hint: canAfford ? undefined : `（需${itemCfg?.price}两，现有${state.inventory.silver}两）`,
+    });
+  }
+
+  for (const event of getInteractEventsForMap(state.location)) {
+    if (evaluateConditions(state, event.conditions)) {
+      options.push({
+        id: `interact_${event.id}`,
+        label: getInteractEventLabel(event),
+        category: 'interact',
+      });
+    }
+  }
+
+  options.push(
+    { id: 'explore', label: '四处看看', category: 'explore' },
+    { id: 'rest', label: '休息恢复', category: 'rest' },
+    { id: 'status', label: '查看状态', category: 'status' },
+  );
+
+  return options;
+}
+
+export function resolveOption(state: GameState, optionId: string): ResolveOptionResult {
+  if (isPaginationValue(optionId)) {
+    const page = parsePaginationValue(optionId);
+    if (page != null) {
+      return {
+        action: 'paginate',
+        result: buildChoicePrompt(state, { page }),
+      };
+    }
+  }
+
+  const dialogRef = parseDialogChoiceValue(optionId);
+  if (dialogRef) {
+    return {
+      action: 'dialog',
+      result: chooseDialog(state, dialogRef.dialogId, dialogRef.index),
+    };
+  }
+
+  if (optionId.startsWith('talk_')) {
+    const npcName = optionId.slice('talk_'.length);
+    return { action: 'talk', result: talkTo(state, npcName) };
+  }
+  if (optionId.startsWith('move_')) {
+    const dest = optionId.slice('move_'.length);
+    return { action: 'move', result: moveTo(state, dest) };
+  }
+  if (optionId.startsWith('buy_')) {
+    const itemName = optionId.slice('buy_'.length);
+    return { action: 'buy', result: buyItem(state, itemName) };
+  }
+  if (optionId.startsWith('interact_')) {
+    const eventId = optionId.slice('interact_'.length);
+    const events = runTriggeredEvents(state, 'interact', { mapName: state.location, eventId });
+    autoSave(state);
+    const message = events
+      .map((e) => e.message)
+      .filter(Boolean)
+      .join('\n');
+    const battle = events.find((e) => e.type === 'battle');
+    return {
+      action: 'interact',
+      result: {
+        success: true,
+        message: message || '你探索了一番。',
+        events,
+        encounter: battle?.enemyName,
+      },
+    };
+  }
+  if (optionId === 'explore') {
+    return {
+      action: 'explore',
+      result: { success: true, message: getLocationInfo(state) },
+    };
+  }
+  if (optionId === 'rest') {
+    return { action: 'rest', result: rest(state) };
+  }
+  if (optionId === 'status') {
+    return { action: 'status', result: getStatus(state) };
+  }
+  return { action: 'unknown', result: { success: false, message: `未知选项：${optionId}` } };
+}
+
+export function buildChoicePrompt(
+  state: GameState,
+  ctx: BuildChoicePromptContext = {},
+): PlayerChoicePrompt {
+  return buildChoicePromptFromOptions(getOptions(state), ctx);
+}
+
+export function buildChoicePromptFromTalk(
+  state: GameState,
+  talkResult: TalkResult,
+  message?: string,
+): PlayerChoicePrompt {
+  if (talkResult.choices?.length && talkResult.dialogId) {
+    return buildChoicePromptFromOptions(getOptions(state), {
+      message: message ?? talkResult.message,
+      dialogChoices: talkResult.choices,
+      dialogId: talkResult.dialogId,
+    });
+  }
+  return buildChoicePrompt(state, { message: message ?? talkResult.message });
+}
+
+export function loadOrCreateGameForUser(userId: string, name = '主角'): LoadGameResult {
+  return persistenceLoadOrCreateGameForUser(userId, createNewGame, name);
+}
+
+export function getNpcContext(state: GameState, npcName: string): NpcContext | null {
+  const map = getMap(state.location);
+  if (!map || !map.npcs.includes(npcName)) return null;
+
+  const card = buildNpcCard(state.location, npcName);
+  if (!card) return null;
+
+  const char = state.character;
+  const availableActions: NpcContext['availableActions'] = ['talk'];
+  const constraints: string[] = [
+    `你是${card.name}${card.title ? `（${card.title}）` : ''}，必须保持角色性格一致。`,
+    '不可编造引擎未确认的物品给予、武功传授或任务完成。',
+  ];
+
+  if (typeof card.persona === 'object') {
+    if (card.persona.tone) constraints.push(`说话风格：${card.persona.tone}`);
+    if (card.persona.dislikes?.length) {
+      constraints.push(`厌恶：${card.persona.dislikes.join('、')}`);
+    }
+  } else {
+    constraints.push(`性格：${card.persona}`);
+  }
+
+  if (card.canTeach?.length) {
+    for (const skill of card.canTeach) {
+      const cond = card.conditions?.teach;
+      const levelOk = !cond?.minLevel || char.level >= cond.minLevel;
+      const iqOk = !cond?.minIQ || char.attributes.iq >= cond.minIQ;
+      if (levelOk && iqOk && !char.skills.includes(skill)) {
+        availableActions.push('teach');
+        constraints.push(`可传授${skill}（需调用 learnSkill 落实，不可口头编造）。`);
+      } else if (!levelOk || !iqOk) {
+        constraints.push(
+          `传授${skill}需等级${cond?.minLevel ?? 1}${cond?.minIQ ? `、资质${cond.minIQ}` : ''}，当前未达标，不得声称已传授。`,
+        );
+      }
+    }
+  }
+
+  if (card.canGive?.length) {
+    availableActions.push('give');
+    constraints.push(`可给予物品：${card.canGive.join('、')}（须引擎确认）。`);
+  }
+
+  if (card.canHelp?.length || card.knowledge.length > 0) {
+    availableActions.push('quest');
+  }
+
+  return {
+    card,
+    playerRelation: {
+      level: char.level,
+      iq: char.attributes.iq,
+      flags: { ...state.flags },
+      inventory: state.inventory.items.map((i) => i.name),
+    },
+    availableActions: [...new Set(availableActions)],
+    constraints,
+  };
 }
 
 export function getInventory(state: GameState): string {
@@ -223,7 +559,13 @@ export function getSkills(state: GameState): string {
 export function moveTo(
   state: GameState,
   destination: string,
-): { success: boolean; message: string; encounter?: string } {
+): {
+  success: boolean;
+  message: string;
+  encounter?: string;
+  events?: EventResult[];
+  locationDetail?: LocationDetail;
+} {
   const alive = assertAlive(state);
   if (!alive.ok) return { success: false, message: alive.message };
 
@@ -269,20 +611,30 @@ export function moveTo(
     encounter = pool[Math.floor(Math.random() * pool.length)];
   }
 
+  const events = runTriggeredEvents(state, 'auto', { mapName: destination });
+  const locationDetail = getLocationDetail(state);
+
   autoSave(state);
 
-  let message = `你来到了${destination}`;
+  const meta = getLocationMeta(destination);
+  let message = meta.description
+    ? `你来到了${destination}。${meta.description}`
+    : `你来到了${destination}`;
+  const eventMessages = events.map((e) => e.message).filter(Boolean);
+  if (eventMessages.length > 0) {
+    message += `\n${eventMessages.join('\n')}`;
+  }
   if (encounter) {
     message += `。暗处传来脚步声——似乎有${encounter}埋伏！`;
   }
-  return { success: true, message, encounter };
+  return { success: true, message, encounter, events, locationDetail };
 }
 
 // ============================================================================
 // NPC 交互
 // ============================================================================
 
-export function talkTo(state: GameState, npcName: string): { success: boolean; message: string } {
+export function talkTo(state: GameState, npcName: string): TalkResult {
   const map = getMap(state.location);
   if (!map) return { success: false, message: '当前位置未知' };
 
@@ -295,15 +647,80 @@ export function talkTo(state: GameState, npcName: string): { success: boolean; m
     return { success: false, message: `${state.location}没有${npcName}` };
   }
 
+  const npc = buildNpcCard(state.location, npcName);
+  const context = getNpcContext(state, npcName) ?? undefined;
+
+  const talkEvents = runTriggeredEvents(state, 'talk', {
+    mapName: state.location,
+    npcName,
+  });
+
   const dialogId = map.npcDialogs[npcName];
   if (dialogId) {
     const dialog = getDialog(dialogId);
     if (dialog) {
-      return { success: true, message: `${dialog.speaker}：「${dialog.text}」` };
+      autoSave(state);
+      return {
+        success: true,
+        message: `${dialog.speaker}：「${dialog.text}」`,
+        npc,
+        context,
+        dialogId,
+        choices: dialogToChoices(dialogId),
+        events: talkEvents.length > 0 ? talkEvents : undefined,
+      };
     }
   }
 
-  return { success: true, message: `你和${npcName}聊了起来` };
+  return {
+    success: true,
+    message: `你和${npcName}聊了起来`,
+    npc,
+    context,
+    events: talkEvents.length > 0 ? talkEvents : undefined,
+  };
+}
+
+export function chooseDialog(state: GameState, dialogId: string, choiceIndex: number): TalkResult {
+  const dialog = getDialog(dialogId);
+  if (!dialog) {
+    return { success: false, message: '对话不存在' };
+  }
+
+  const choice = dialog.choices?.[choiceIndex];
+  if (!choice) {
+    return { success: false, message: '无效的选项' };
+  }
+
+  const actionResults: EventResult[] = [];
+  if (choice.actions?.length) {
+    actionResults.push(...processDialogChoiceActions(state, choice.actions));
+  }
+
+  if (choice.nextId) {
+    const nextDialog = getDialog(choice.nextId);
+    if (nextDialog) {
+      autoSave(state);
+      return {
+        success: true,
+        message: `${nextDialog.speaker}：「${nextDialog.text}」`,
+        dialogId: choice.nextId,
+        choices: dialogToChoices(choice.nextId),
+        events: actionResults.length > 0 ? actionResults : undefined,
+      };
+    }
+  }
+
+  autoSave(state);
+  const actionMsg = actionResults
+    .map((r) => r.message)
+    .filter(Boolean)
+    .join('\n');
+  return {
+    success: true,
+    message: actionMsg || '你结束了对话。',
+    events: actionResults.length > 0 ? actionResults : undefined,
+  };
 }
 
 // ============================================================================

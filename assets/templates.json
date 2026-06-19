@@ -66,38 +66,197 @@
     "小村": {
       "npcs": ["村长", "商人"],
       "shops": ["金创药", "小还丹", "干粮"],
-      "connections": ["平安镇", "山洞"]
+      "connections": ["平安镇", "山洞"],
+      "description": "炊烟袅袅的宁静村落，茅屋错落，鸡犬相闻。村口水井旁有几个孩童在嬉戏。",
+      "atmosphere": "安全，适合新手落脚",
+      "dangerLevel": "safe",
+      "npcCards": {
+        "村长": {
+          "name": "村长",
+          "title": "小村村长",
+          "persona": "年过六旬的乡村长者，见多识广但话不多。年轻时在华山见过真正的剑客，从此对江湖心存敬畏。",
+          "knowledge": ["山洞传说：里面住着神秘人，据说藏着武林秘籍", "平安镇势力：镇上各派眼线不少，言行当心"],
+          "canHelp": ["告诉你山洞的位置和危险", "提醒平安镇物价"]
+        },
+        "商人": {
+          "name": "商人",
+          "title": "行脚商人",
+          "persona": "走南闯北的行脚商，消息灵通但唯利是图。脸上总挂着商人特有的精明笑容。",
+          "knowledge": ["知道哪里能买到好东西", "华山最近不太平"],
+          "isShop": true
+        }
+      }
     },
     "平安镇": {
       "npcs": ["守卫", "商店老板", "客栈老板"],
       "shops": ["铁剑", "钢刀", "布衣", "皮甲", "金创药", "小还丹"],
-      "connections": ["小村", "华山", "桃花岛", "全真教", "光明顶"]
+      "connections": ["小村", "华山", "桃花岛", "全真教", "光明顶"],
+      "description": "青石板铺就的市镇，酒旗招展，行人往来。这里是方圆百里最繁华的集散地。",
+      "atmosphere": "热闹但需留心，各路人物混杂",
+      "dangerLevel": "safe",
+      "npcCards": {
+        "守卫": {
+          "name": "守卫",
+          "title": "镇口守卫",
+          "persona": "魁梧的汉子，佩刀而立，对陌生人盘查仔细但不无礼。",
+          "knowledge": ["镇上最近有江湖人士出没", "华山、桃花岛、全真教、光明顶均可从此出发"],
+          "canHelp": ["指路各方向", "提醒宵禁"]
+        },
+        "商店老板": {
+          "name": "商店老板",
+          "title": "兵器铺掌柜",
+          "persona": "精明干练的中年人，一眼便能看出客人有没有银两。",
+          "knowledge": ["铁剑钢刀是入门首选", "皮甲比布衣实用得多"],
+          "isShop": true
+        },
+        "客栈老板": {
+          "name": "客栈老板",
+          "title": "悦来客栈掌柜",
+          "persona": "胖乎乎的笑脸掌柜，招呼客人热情周到，消息也灵通。",
+          "knowledge": ["休息可恢复全部状态", "江湖传闻常在他这里流传"],
+          "canHelp": ["提供休息", "打听江湖消息"]
+        }
+      }
     },
     "山洞": {
       "npcs": ["神秘人"],
       "shops": [],
       "connections": ["小村"],
-      "encounters": { "rate": 20, "enemies": ["山贼", "强盗", "老虎"] }
+      "encounters": { "rate": 20, "enemies": ["山贼", "强盗", "老虎"] },
+      "description": "崎岖山道尽头，一处隐蔽岩洞在藤蔓间若隐若现。洞口寒气森森，幽暗中隐约有火光闪烁。",
+      "atmosphere": "阴森危险，可能有埋伏",
+      "dangerLevel": "dangerous",
+      "npcCards": {
+        "神秘人": {
+          "name": "神秘人",
+          "title": "洞中隐士",
+          "persona": "面容被阴影遮住，声音低沉。似乎在此隐居多年，对闯入者半是考验半是好奇。",
+          "knowledge": ["洞壁上有前人刻下的武功心得", "深处似乎藏有宝物"],
+          "canHelp": ["指点武功", "给予任务"],
+          "canTeach": ["基本刀法"],
+          "conditions": {
+            "teach": { "minLevel": 3 },
+            "quest": { "minLevel": 5, "flag": "cave_master_met" }
+          }
+        }
+      }
     },
     "华山": {
       "npcs": ["王重阳"],
       "shops": [],
-      "connections": ["平安镇"]
+      "connections": ["平安镇"],
+      "description": "天下五绝论剑之地，山势险峻，云雾缭绕。峰顶有论剑台，江湖人梦寐以求的圣地。",
+      "atmosphere": "肃穆高远，暗藏剑意",
+      "dangerLevel": "cautious",
+      "npcCards": {
+        "王重阳": {
+          "name": "王重阳",
+          "title": "全真教主",
+          "persona": {
+            "archetype": "一代宗师",
+            "tone": "平和淡然，偶露锋芒",
+            "likes": ["修道之人", "悟性高者"],
+            "dislikes": ["奸邪小人", "好勇斗狠"]
+          },
+          "knowledge": ["华山论剑往事", "九阴真经下落", "全真内功精髓"],
+          "canTeach": ["全真剑法"],
+          "conditions": {
+            "teach": { "minLevel": 10, "minIQ": 60 }
+          }
+        }
+      }
     },
     "桃花岛": {
       "npcs": ["黄药师", "黄蓉"],
       "shops": [],
-      "connections": ["平安镇"]
+      "connections": ["平安镇"],
+      "description": "东海桃花岛，落英缤纷，奇门阵法隐于花丛。海风携着药香与箫声，令人心旷神怡又心生敬畏。",
+      "atmosphere": "瑰丽神秘，岛主性情难测",
+      "dangerLevel": "cautious",
+      "npcCards": {
+        "黄药师": {
+          "name": "黄药师",
+          "title": "桃花岛主",
+          "persona": {
+            "archetype": "傲世天才",
+            "tone": "冷淡疏离，偶尔露出一丝赞许",
+            "likes": ["聪明人", "奇门遁甲", "弹指神通"],
+            "dislikes": ["蠢人", "世俗礼法"]
+          },
+          "knowledge": ["九阴真经的秘密", "全真教的历史", "华山论剑往事"],
+          "canTeach": ["弹指神通"],
+          "conditions": {
+            "teach": { "minLevel": 5, "minIQ": 60 }
+          }
+        },
+        "黄蓉": {
+          "name": "黄蓉",
+          "title": "桃花岛千金",
+          "persona": "机灵聪慧的少女，笑语盈盈，却一眼能看穿人心。",
+          "knowledge": ["父亲黄药师的脾气", "江湖各派趣闻", "烹饪与奇门之术"],
+          "canHelp": ["在父亲面前美言", "分享江湖情报"]
+        }
+      }
     },
     "全真教": {
       "npcs": ["王重阳", "周伯通"],
       "shops": [],
-      "connections": ["平安镇"]
+      "connections": ["平安镇"],
+      "description": "终南山全真教总坛，道教圣地。殿宇庄严，钟磬悠扬，弟子们练功的呼喝声回荡在山谷。",
+      "atmosphere": "清修之地，规矩森严",
+      "dangerLevel": "safe",
+      "npcCards": {
+        "王重阳": {
+          "name": "王重阳",
+          "title": "全真教主",
+          "persona": {
+            "archetype": "一代宗师",
+            "tone": "平和淡然，偶露锋芒",
+            "likes": ["修道之人", "悟性高者"],
+            "dislikes": ["奸邪小人", "好勇斗狠"]
+          },
+          "knowledge": ["全真教历史", "九阴真经", "华山论剑"],
+          "canTeach": ["全真剑法"],
+          "conditions": {
+            "teach": { "minLevel": 10, "minIQ": 60 }
+          }
+        },
+        "周伯通": {
+          "name": "周伯通",
+          "title": "老顽童",
+          "persona": "童心未泯的前辈高人，爱开玩笑，武功却深不可测。",
+          "knowledge": ["左右互搏之术", "王重阳的往事", "江湖趣闻"],
+          "canTeach": ["空明拳"],
+          "conditions": {
+            "teach": { "minLevel": 8 }
+          }
+        }
+      }
     },
     "光明顶": {
       "npcs": ["张无忌"],
       "shops": [],
-      "connections": ["平安镇"]
+      "connections": ["平安镇"],
+      "description": "西域光明顶，明教总坛所在。烈日当空，教众练武之声震天。此地汇聚天下豪杰。",
+      "atmosphere": "豪迈壮阔，正邪之争的焦点",
+      "dangerLevel": "cautious",
+      "npcCards": {
+        "张无忌": {
+          "name": "张无忌",
+          "title": "明教教主",
+          "persona": {
+            "archetype": "仁厚领袖",
+            "tone": "温和谦逊，胸怀天下",
+            "likes": ["正义之士", "侠义心肠"],
+            "dislikes": ["欺压百姓", "门派偏见"]
+          },
+          "knowledge": ["九阳神功", "明教历史", "六大派围攻光明顶往事"],
+          "canTeach": ["九阳神功"],
+          "conditions": {
+            "teach": { "minLevel": 15, "minIQ": 70 }
+          }
+        }
+      }
     }
   },
   "skills": [

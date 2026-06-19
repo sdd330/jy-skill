@@ -5,13 +5,43 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { NpcCard } from './game-types';
 
 const ROOT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ASSETS_DIR = join(ROOT_DIR, 'assets');
 
+/** 地图名归一化（game-config 与 templates 不一致时） */
+const MAP_ALIASES: Record<string, string> = {
+  终南山全真教: '全真教',
+};
+
+function normalizeMapName(name: string): string {
+  return MAP_ALIASES[name] ?? name;
+}
+
 // ============================================================================
 // 类型
 // ============================================================================
+
+export interface MapEventCondition {
+  type: string;
+  params: Record<string, unknown>;
+}
+
+export interface MapEventAction {
+  type: string;
+  params: Record<string, unknown>;
+}
+
+export interface MapEvent {
+  id: string;
+  triggerType: string;
+  x?: number;
+  y?: number;
+  npcName?: string;
+  conditions: MapEventCondition[];
+  actions: MapEventAction[];
+}
 
 export interface MapInfo {
   npcs: string[];
@@ -20,6 +50,11 @@ export interface MapInfo {
   npcDialogs: Record<string, string>;
   encounterRate?: number;
   encounterEnemies?: string[];
+  description?: string;
+  atmosphere?: string;
+  dangerLevel?: 'safe' | 'cautious' | 'dangerous';
+  npcCards?: Record<string, NpcCard>;
+  events?: MapEvent[];
 }
 
 export interface ItemConfig {
@@ -64,10 +99,17 @@ export interface CharacterConfig {
   source: string;
 }
 
+export interface DialogChoiceConfig {
+  text: string;
+  nextId: string;
+  actions?: MapEventAction[];
+}
+
 export interface DialogConfig {
   id: string;
   speaker: string;
   text: string;
+  choices?: DialogChoiceConfig[];
 }
 
 export interface EnemyTemplate {
@@ -77,6 +119,17 @@ export interface EnemyTemplate {
   solo?: boolean;
   onHitPoison?: number;
   onHitHurt?: number;
+}
+
+export interface TemplateMapEntry {
+  npcs: string[];
+  shops: string[];
+  connections: string[];
+  encounters?: number | { rate: number; enemies: string[] };
+  description?: string;
+  atmosphere?: string;
+  dangerLevel?: 'safe' | 'cautious' | 'dangerous';
+  npcCards?: Record<string, NpcCard>;
 }
 
 export interface GameTemplates {
@@ -90,15 +143,7 @@ export interface GameTemplates {
   };
   startLocation: string;
   enemies: Record<string, EnemyTemplate | { characterId: number }>;
-  maps?: Record<
-    string,
-    {
-      npcs: string[];
-      shops: string[];
-      connections: string[];
-      encounters?: number | { rate: number; enemies: string[] };
-    }
-  >;
+  maps?: Record<string, TemplateMapEntry>;
 }
 
 function parseEncounters(
@@ -109,6 +154,17 @@ function parseEncounters(
     return { encounterRate: encounters, encounterEnemies: ['山贼', '强盗'] };
   }
   return { encounterRate: encounters.rate, encounterEnemies: [...encounters.enemies] };
+}
+
+function deriveDangerLevel(
+  templateMap: TemplateMapEntry | undefined,
+  encounterConfig: Pick<MapInfo, 'encounterRate' | 'encounterEnemies'>,
+  events: MapEvent[],
+): 'safe' | 'cautious' | 'dangerous' {
+  if (templateMap?.dangerLevel) return templateMap.dangerLevel;
+  if (encounterConfig.encounterRate && encounterConfig.encounterRate > 0) return 'dangerous';
+  if (events.some((e) => e.triggerType === 'interact')) return 'cautious';
+  return 'safe';
 }
 
 // ============================================================================
@@ -147,6 +203,7 @@ function buildMapsFromConfig(): void {
     maps: Array<{
       id: number;
       name: string;
+      desc?: string;
       npcs: Array<{
         roleId: number;
         dialogId: string;
@@ -154,13 +211,14 @@ function buildMapsFromConfig(): void {
         shopItems: number[];
       }>;
       connections: Array<{ targetMapId: number }>;
+      events?: MapEvent[];
     }>;
     dialogs: Record<string, DialogConfig>;
   }>('game-config.json');
 
   const mapIdToName = new Map<number, string>();
   for (const map of gameConfig.maps) {
-    mapIdToName.set(map.id, map.name);
+    mapIdToName.set(map.id, normalizeMapName(map.name));
   }
 
   for (const [id, dialog] of Object.entries(gameConfig.dialogs)) {
@@ -170,7 +228,8 @@ function buildMapsFromConfig(): void {
   const templateMaps = templates.maps ?? {};
 
   for (const map of gameConfig.maps) {
-    const templateMap = templateMaps[map.name as keyof typeof templateMaps];
+    const mapName = normalizeMapName(map.name);
+    const templateMap = templateMaps[mapName as keyof typeof templateMaps];
     const npcDialogs: Record<string, string> = {};
     const npcNames: string[] = [];
     const shopNames = new Set<string>();
@@ -193,18 +252,25 @@ function buildMapsFromConfig(): void {
         ? [...templateMap.connections]
         : map.connections
             .map((c) => mapIdToName.get(c.targetMapId))
-            .filter((name): name is string => Boolean(name));
+            .filter((name): name is string => Boolean(name))
+            .map(normalizeMapName);
 
     const shops =
       templateMap && templateMap.shops?.length > 0 ? [...templateMap.shops] : [...shopNames];
 
     const encounterConfig = parseEncounters(templateMap?.encounters);
+    const events = map.events ?? [];
 
-    mapsByName.set(map.name, {
+    mapsByName.set(mapName, {
       npcs: templateMap?.npcs?.length ? [...templateMap.npcs] : npcNames,
       shops,
       connections,
       npcDialogs,
+      description: templateMap?.description ?? map.desc,
+      atmosphere: templateMap?.atmosphere,
+      dangerLevel: deriveDangerLevel(templateMap, encounterConfig, events),
+      npcCards: templateMap?.npcCards ? { ...templateMap.npcCards } : undefined,
+      events: events.length > 0 ? [...events] : undefined,
       ...encounterConfig,
     });
   }
@@ -218,6 +284,10 @@ function buildMapsFromConfig(): void {
         shops: [...map.shops],
         connections: [...map.connections],
         npcDialogs: {},
+        description: map.description,
+        atmosphere: map.atmosphere,
+        dangerLevel: deriveDangerLevel(map, encounterConfig, []),
+        npcCards: map.npcCards ? { ...map.npcCards } : undefined,
         ...encounterConfig,
       });
     }
@@ -306,7 +376,7 @@ export function getTemplates(): GameTemplates {
 
 export function getMap(name: string): MapInfo | undefined {
   initConfigs();
-  return mapsByName.get(name);
+  return mapsByName.get(normalizeMapName(name));
 }
 
 export function getAllMapNames(): string[] {
@@ -317,6 +387,11 @@ export function getAllMapNames(): string[] {
 export function getItem(name: string): ItemConfig | undefined {
   initConfigs();
   return itemsByName.get(name);
+}
+
+export function getItemById(id: number): ItemConfig | undefined {
+  initConfigs();
+  return itemsById.get(id);
 }
 
 export function getSkill(name: string): SkillConfig | undefined {
@@ -360,6 +435,42 @@ export function getCharacterByName(name: string): CharacterConfig | undefined {
 export function getDialog(dialogId: string): DialogConfig | undefined {
   initConfigs();
   return dialogsById.get(dialogId);
+}
+
+export function getMapEvents(mapName: string): MapEvent[] {
+  initConfigs();
+  return getMap(mapName)?.events ?? [];
+}
+
+export function getLocationMeta(mapName: string): {
+  description: string;
+  atmosphere: string;
+  dangerLevel: 'safe' | 'cautious' | 'dangerous';
+} {
+  initConfigs();
+  const map = getMap(mapName);
+  return {
+    description: map?.description ?? `${mapName}，江湖一处所在。`,
+    atmosphere: map?.atmosphere ?? '',
+    dangerLevel: map?.dangerLevel ?? 'safe',
+  };
+}
+
+export function getNpcCard(location: string, npcName: string): NpcCard | undefined {
+  initConfigs();
+  const map = getMap(location);
+  const card = map?.npcCards?.[npcName];
+  if (card) return { ...card, name: card.name ?? npcName };
+
+  const char = getCharacterByName(npcName);
+  if (char) {
+    return {
+      name: char.name,
+      persona: `${char.name}，出自${char.source}。`,
+      knowledge: [],
+    };
+  }
+  return undefined;
 }
 
 export function getEnemyTemplate(enemyName: string): EnemyTemplate | undefined {
@@ -435,6 +546,13 @@ export function validateAssets(): string[] {
     for (const conn of map.connections) {
       if (!getMap(conn)) {
         errors.push(`Map "${mapName}" connection target unknown: ${conn}`);
+      }
+    }
+    if (map.npcCards) {
+      for (const npcName of Object.keys(map.npcCards)) {
+        if (!map.npcs.includes(npcName)) {
+          errors.push(`Map "${mapName}" npcCards key "${npcName}" not in npcs list`);
+        }
       }
     }
   }

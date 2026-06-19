@@ -1,5 +1,5 @@
 /**
- * 游戏存档持久化 — save/game-state.json
+ * 游戏存档持久化 — save/game-state.json 或 save/users/{userId}.json
  */
 
 import {
@@ -23,11 +23,32 @@ export interface LoadGameResult {
 
 const ROOT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SAVE_DIR = join(ROOT_DIR, 'save');
+const USERS_DIR = join(SAVE_DIR, 'users');
 const SAVE_FILE = join(SAVE_DIR, 'game-state.json');
-const SAVE_TMP = join(SAVE_DIR, 'game-state.json.tmp');
 
-export function getSavePath(): string {
-  return SAVE_FILE;
+let currentSaveUserId: string | null = null;
+
+/** 设置当前会话使用的存档用户 ID（null = 默认单用户档） */
+export function setSaveUserId(userId: string | null): void {
+  currentSaveUserId = userId;
+}
+
+export function getSaveUserId(): string | null {
+  return currentSaveUserId;
+}
+
+function sanitizeUserId(userId: string): string {
+  return userId.replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+export function getSavePath(userId?: string | null): string {
+  const id = userId === undefined ? currentSaveUserId : userId;
+  if (!id) return SAVE_FILE;
+  return join(USERS_DIR, `${sanitizeUserId(id)}.json`);
+}
+
+function getSaveTmpPath(savePath: string): string {
+  return `${savePath}.tmp`;
 }
 
 function isFiniteNumber(n: unknown): n is number {
@@ -122,49 +143,62 @@ function migrateGameState(state: GameState): GameState {
   return state;
 }
 
-/** 读取存档；不存在或损坏时返回 null */
-export function loadGameState(): GameState | null {
-  if (!existsSync(SAVE_FILE)) return null;
-
+function loadGameStateFromPath(path: string): GameState | null {
+  if (!existsSync(path)) return null;
   try {
-    const raw = readFileSync(SAVE_FILE, 'utf-8');
+    const raw = readFileSync(path, 'utf-8');
     const parsed: unknown = JSON.parse(raw);
-    if (!isValidGameState(parsed)) {
-      return null;
-    }
+    if (!isValidGameState(parsed)) return null;
     return migrateGameState(parsed);
   } catch {
     return null;
   }
 }
 
+/** 读取存档；不存在或损坏时返回 null */
+export function loadGameState(userId?: string | null): GameState | null {
+  return loadGameStateFromPath(getSavePath(userId));
+}
+
 /** 写入存档（原子替换，避免写入中断损坏） */
-export function saveGameState(state: GameState): void {
-  if (!existsSync(SAVE_DIR)) {
-    mkdirSync(SAVE_DIR, { recursive: true });
+export function saveGameState(state: GameState, userId?: string | null): void {
+  const path = getSavePath(userId);
+  const dir = dirname(path);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
   }
-  writeFileSync(SAVE_TMP, JSON.stringify(state, null, 2), 'utf-8');
-  renameSync(SAVE_TMP, SAVE_FILE);
+  const tmp = getSaveTmpPath(path);
+  writeFileSync(tmp, JSON.stringify(state, null, 2), 'utf-8');
+  renameSync(tmp, path);
 }
 
 /** 删除存档 */
-export function deleteSave(): void {
-  if (existsSync(SAVE_FILE)) {
-    unlinkSync(SAVE_FILE);
-  }
-  if (existsSync(SAVE_TMP)) {
-    unlinkSync(SAVE_TMP);
-  }
+export function deleteSave(userId?: string | null): void {
+  const path = getSavePath(userId);
+  const tmp = getSaveTmpPath(path);
+  if (existsSync(path)) unlinkSync(path);
+  if (existsSync(tmp)) unlinkSync(tmp);
 }
 
 /** 开始或继续：有存档则加载，否则新建并落盘 */
 export function loadOrCreateGame(
   createNewGame: (name: string) => GameState,
   name = '主角',
+  userId?: string | null,
 ): LoadGameResult {
-  const existing = loadGameState();
+  const existing = loadGameState(userId);
   if (existing) return { state: existing, isNewGame: false };
   const state = createNewGame(name);
-  saveGameState(state);
+  saveGameState(state, userId);
   return { state, isNewGame: true };
+}
+
+/** 多用户场景：按 userId 加载或新建 */
+export function loadOrCreateGameForUser(
+  userId: string,
+  createNewGame: (name: string) => GameState,
+  name = '主角',
+): LoadGameResult {
+  setSaveUserId(userId);
+  return loadOrCreateGame(createNewGame, name, userId);
 }

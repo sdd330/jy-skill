@@ -98,6 +98,20 @@
             { "type": "setFlag", "params": { "flag": "village_visited", "value": true } },
             { "type": "dialog", "params": { "dialogId": "village_intro" } }
           ]
+        },
+        {
+          "id": "village_cave_return",
+          "triggerType": "talk",
+          "npcName": "村长",
+          "conditions": [
+            { "type": "flag", "params": { "flag": "cave_master_met", "value": true } },
+            { "type": "flag", "params": { "flag": "village_cave_reward", "value": false } }
+          ],
+          "actions": [
+            { "type": "dialog", "params": { "dialogId": "village_cave_reward" } },
+            { "type": "addItem", "params": { "itemId": 30, "count": 3 } },
+            { "type": "setFlag", "params": { "flag": "village_cave_reward", "value": true } }
+          ]
         }
       ]
     },
@@ -148,6 +162,29 @@
           "actions": [
             { "type": "setFlag", "params": { "flag": "cave_treasure", "value": true } },
             { "type": "addItem", "params": { "itemId": 13, "count": 1 } }
+          ]
+        },
+        {
+          "id": "cave_start",
+          "triggerType": "auto",
+          "conditions": [{ "type": "flag", "params": { "flag": "cave_entered", "value": false } }],
+          "actions": [
+            { "type": "setFlag", "params": { "flag": "cave_entered", "value": true } },
+            { "type": "dialog", "params": { "dialogId": "cave_intro" } }
+          ]
+        },
+        {
+          "id": "cave_master_quest",
+          "triggerType": "talk",
+          "npcName": "神秘人",
+          "conditions": [
+            { "type": "level", "params": { "min": 5 } },
+            { "type": "flag", "params": { "flag": "cave_master_met", "value": false } }
+          ],
+          "actions": [
+            { "type": "dialog", "params": { "dialogId": "cave_master_notice" } },
+            { "type": "addItem", "params": { "itemId": 36, "count": 1 } },
+            { "type": "setFlag", "params": { "flag": "cave_master_met", "value": true } }
           ]
         }
       ]
@@ -329,7 +366,7 @@
     },
     {
       "id": 6,
-      "name": "终南山全真教",
+      "name": "全真教",
       "desc": "道教圣地，全真教总坛。",
       "width": 14,
       "height": 12,
@@ -687,8 +724,32 @@
         {
           "text": "来吧！",
           "nextId": "",
-          "actions": [{ "type": "battle", "params": { "battleId": 3 } }]
+          "actions": [{ "type": "battle", "params": { "enemyName": "武林高手" } }]
         }
+      ]
+    },
+    "cave_intro": {
+      "id": "cave_intro",
+      "speaker": "旁白",
+      "text": "入此洞者，机缘与凶险并存。洞壁上刻着几行潦草的字迹。",
+      "choices": [
+        { "text": "（继续）", "nextId": "" }
+      ]
+    },
+    "cave_master_notice": {
+      "id": "cave_master_notice",
+      "speaker": "神秘人",
+      "text": "你已有几分功力。这瓶解毒丸收好，江湖路远，备不时之需。",
+      "choices": [
+        { "text": "多谢前辈", "nextId": "" }
+      ]
+    },
+    "village_cave_reward": {
+      "id": "village_cave_reward",
+      "speaker": "村长",
+      "text": "听说你在山洞有所收获？这是村里备的金创药，带上吧。",
+      "choices": [
+        { "text": "多谢村长", "nextId": "" }
       ]
     },
     "town_guard": {

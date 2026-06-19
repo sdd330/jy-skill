@@ -10,8 +10,8 @@ describe('validate-versions', () => {
     const { ok, errors, packageVersion, skillVersion } = validateVersions(ROOT);
     expect(errors).toEqual([]);
     expect(ok).toBe(true);
-    expect(packageVersion).toBe('0.3.1');
-    expect(skillVersion).toBe('0.3.1');
+    expect(packageVersion).toBe('0.7.0');
+    expect(skillVersion).toBe('0.7.0');
   });
 
   it('extracts metadata.version from frontmatter', () => {
