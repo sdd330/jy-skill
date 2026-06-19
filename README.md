@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/sdd330/jy-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/sdd330/jy-skill/actions/workflows/ci.yml)
 [![Release](https://github.com/sdd330/jy-skill/actions/workflows/release.yml/badge.svg)](https://github.com/sdd330/jy-skill/actions/workflows/release.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/github/license/sdd330/jy-skill)](LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/sdd330/jy-skill?include_prereleases)](https://github.com/sdd330/jy-skill/releases)
 
 独立的 Cursor Agent Skill。玩家通过自然语言与智能体对话，体验金庸武侠冒险。
