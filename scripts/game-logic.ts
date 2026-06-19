@@ -105,6 +105,11 @@ export function calculateMovePoints(agility: number): number {
   return Math.floor(agility / 15) + 3;
 }
 
+/** 地点移动体力消耗：轻功越高消耗越低，最低 3 */
+export function calculateMoveStaminaCost(agility: number): number {
+  return Math.max(3, 8 - Math.floor(agility / 15));
+}
+
 // ============================================================================
 // 默认属性
 // ============================================================================

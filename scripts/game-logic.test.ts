@@ -7,6 +7,7 @@ import {
   calculateMpCost,
   calculateStaminaCost,
   calculateMovePoints,
+  calculateMoveStaminaCost,
   DEFAULT_ATTRIBUTES,
   MAX_LEVEL,
   MAX_SKILL_LEVEL,
@@ -108,6 +109,16 @@ describe('game-logic', () => {
       [30, 5],
     ])('agility %i yields %i move points', (agility, points) => {
       expect(calculateMovePoints(agility)).toBe(points);
+    });
+  });
+
+  describe('calculateMoveStaminaCost', () => {
+    it.each([
+      [15, 7],
+      [30, 6],
+      [120, 3],
+    ])('agility %i yields move stamina cost %i', (agility, cost) => {
+      expect(calculateMoveStaminaCost(agility)).toBe(cost);
     });
   });
 

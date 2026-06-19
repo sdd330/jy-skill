@@ -7,7 +7,14 @@ const ROOT = process.cwd();
 const ZIP_NAME = 'jy-skill.zip';
 const ZIP_PATH = join(ROOT, ZIP_NAME);
 
-const REQUIRED_ENTRIES = ['SKILL.md', 'scripts/game-engine.ts', 'assets/templates.json'];
+const REQUIRED_ENTRIES = [
+  'SKILL.md',
+  'AGENTS.md',
+  'scripts/game-engine.ts',
+  'assets/templates.json',
+  'references/agent-handbook.md',
+  'references/player-guide.md',
+];
 const FORBIDDEN_PREFIXES = ['node_modules/', 'coverage/', '.git/', '.github/'];
 
 function shouldInclude(relativePath) {

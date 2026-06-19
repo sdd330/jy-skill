@@ -52,8 +52,8 @@
     "山贼": { "characterId": 200 },
     "强盗": { "characterId": 201 },
     "武林高手": { "characterId": 202 },
-    "老虎": { "hp": 150, "attack": 35, "defence": 20, "solo": true },
-    "毒蛇": { "hp": 60, "attack": 10, "defence": 5, "solo": true }
+    "老虎": { "hp": 150, "attack": 35, "defence": 20, "solo": true, "onHitHurt": 10 },
+    "毒蛇": { "hp": 60, "attack": 10, "defence": 5, "solo": true, "onHitPoison": 15 }
   },
   "defaultInventory": {
     "silver": 100,
@@ -77,7 +77,7 @@
       "npcs": ["神秘人"],
       "shops": [],
       "connections": ["小村"],
-      "encounters": 20
+      "encounters": { "rate": 20, "enemies": ["山贼", "强盗", "老虎"] }
     },
     "华山": {
       "npcs": ["王重阳"],

@@ -7,8 +7,8 @@ permissions:
   contents: read
 
 jobs:
-  gate:
-    name: Lint · Typecheck · Validate · Test
+  lint:
+    name: Lint · Format
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,11 +20,108 @@ jobs:
       - name: Lint and format check
         run: pnpm run check
 
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
+
       - name: Typecheck
         run: pnpm run typecheck
 
-      - name: Validate SKILL.md and assets
+  validate:
+    name: Validate · Meta · Assets · Versions · Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
+
+      - name: Validate SKILL.md, assets, versions, and docs
         run: pnpm run validate
+
+  pack:
+    name: Pack · Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
+
+      - name: Pack and verify skill zip
+        run: pnpm run validate:pack
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
+
+      - name: Audit dependencies (high+)
+        run: pnpm run audit:ci
+
+  test-coverage:
+    name: Test · Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
 
       - name: Run tests with coverage
         run: pnpm run test:coverage
+
+      - name: Coverage summary
+        if: always()
+        run: node .github/scripts/coverage-summary.mjs
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  npm-pack:
+    name: NPM pack · Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
+
+      - name: Validate npm pack contents
+        run: pnpm run validate:npm
+
+  gate:
+    name: Gate
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - typecheck
+      - validate
+      - pack
+      - npm-pack
+      - audit
+      - test-coverage
+    steps:
+      - name: All quality checks passed
+        run: echo "Quality gate passed"

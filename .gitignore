@@ -5,13 +5,18 @@ node_modules/
 dist/
 coverage/
 jy-skill.zip
+*.tgz
 
 # Vitest / Vite 缓存
 .vitest/
 node_modules/.vite/
 
 # 运行时存档
-save/game-state.json
+save/*.json
+save/*.json.tmp
+
+# 本地 Cursor skill 安装（开发仓库即 skill 源码）
+.cursor/skills/jy/
 
 # 日志
 *.log

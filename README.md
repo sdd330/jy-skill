@@ -1,5 +1,6 @@
 # 金庸群侠传 · 对话武侠 RPG
 
+[![npm version](https://img.shields.io/npm/v/@sdd330dev/jy-skill)](https://www.npmjs.com/package/@sdd330dev/jy-skill)
 [![CI](https://github.com/sdd330/jy-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/sdd330/jy-skill/actions/workflows/ci.yml)
 [![Release](https://github.com/sdd330/jy-skill/actions/workflows/release.yml/badge.svg)](https://github.com/sdd330/jy-skill/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/github/license/sdd330/jy-skill)](LICENSE)
@@ -33,38 +34,113 @@
 
 ## 安装
 
-本仓库即完整 skill，**不依赖任何 monorepo 或子项目**。
+包已发布至 npm：**[@sdd330dev/jy-skill](https://www.npmjs.com/package/@sdd330dev/jy-skill)**
 
-### Cursor
+### 项目内安装（推荐）
 
-任选一种方式注册：
-
-**项目内（推荐）**
+在 Cursor 项目根目录执行：
 
 ```bash
-# 在本仓库根目录直接开发；或复制到目标项目的 skill 目录
-mkdir -p .cursor/skills && cp -R /path/to/jy .cursor/skills/jy
+npm install @sdd330dev/jy-skill --save-dev
+npx jy-skill install
 ```
 
-**个人全局**
+使用 pnpm 或 yarn：
 
 ```bash
-mkdir -p ~/.cursor/skills && cp -R /path/to/jy ~/.cursor/skills/jy
+pnpm add -D @sdd330dev/jy-skill && pnpm exec jy-skill install
+# 或
+yarn add -D @sdd330dev/jy-skill && yarn jy-skill install
 ```
 
-Agent 读取 `SKILL.md` 与 [AGENTS.md](AGENTS.md) 即可运行；玩家说明见 [references/player-guide.md](references/player-guide.md)。
+安装完成后，目录结构如下：
 
-### 发版包
+```
+你的项目/
+└── .cursor/skills/jy/    ← SKILL.md、assets/、scripts/ 等
+```
 
-Git tag（`v*`）触发 [Release 工作流](.github/workflows/release.yml)，生成 `jy-skill.zip` 并发布 GitHub Release。
+在 Cursor 中打开该项目，对话里说 **`jy`** 或 **「开始游戏」** 即可。
+
+### 全局安装（所有项目可用）
+
+```bash
+npm install -g @sdd330dev/jy-skill
+jy-skill install --global
+```
+
+skill 将安装到 `~/.cursor/skills/jy`，任意 Cursor 项目均可加载。
+
+### CLI 选项
+
+| 选项 | 说明 |
+|------|------|
+| `--global` | 安装到 `~/.cursor/skills/jy` 而非当前项目 |
+| `--force` | 覆盖已存在的 skill 目录 |
+| `--copy` | 强制复制文件（默认优先 symlink；Windows 无权限时自动 fallback） |
+
+示例：`npx jy-skill install --force --copy`
+
+> **注意**：`npm install` 只把包放入 `node_modules`，不会自动写入 `.cursor/`。必须再执行 **`jy-skill install`**（无 postinstall，避免 monorepo/CI 误写配置）。
+
+### 其他安装方式
+
+**GitHub Release（离线 / 无 npm）**
+
+从 [Releases](https://github.com/sdd330/jy-skill/releases) 下载 `jy-skill.zip`，解压后：
+
+```bash
+mkdir -p .cursor/skills
+unzip jy-skill.zip -d .cursor/skills/jy
+```
+
+**从源码开发**
+
+克隆本仓库，在本目录用 pnpm 开发与测试（见下方「开发与测试」）。本地调试也可手动链接：
+
+```bash
+mkdir -p .cursor/skills
+ln -s "$(pwd)" .cursor/skills/jy   # macOS / Linux
+# Windows 或 symlink 失败时：cp -R . .cursor/skills/jy
+```
+
+### 发布与版本
+
+Git tag（`v*`）触发 [Release 工作流](.github/workflows/release.yml)，生成 `jy-skill.zip` 并同步发布到 [npm @sdd330dev/jy-skill](https://www.npmjs.com/package/@sdd330dev/jy-skill)（GitHub Secrets 需配置 `NPM_TOKEN`）。
+
+**维护者：本机发布到 npm**
+
+```bash
+pnpm run ci
+# 使用 Granular Access Token（Publish + Bypass 2FA），或 npm login 后带 OTP：
+npm publish --access public   # 或 pnpm run publish:npm
+```
+
+Agent 读取 [SKILL.md](SKILL.md)、[AGENTS.md](AGENTS.md) 与 [智能体操作手册](references/agent-handbook.md) 即可运行；玩家说明见 [references/player-guide.md](references/player-guide.md)。
+
+---
 
 ## CI/CD
 
 | 工作流 | 触发 | 说明 |
 |--------|------|------|
-| [CI](.github/workflows/ci.yml) | push / PR → `main`、手动 `workflow_dispatch` | 并行：`static-checks`（lint/typecheck/validate）+ `test-coverage`（Vitest 100% 覆盖率 + Step Summary） |
-| [Quality Gate](.github/workflows/quality-gate.yml) | 被 CI / Release 调用 | 可复用质量门禁（lint → typecheck → validate → test:coverage） |
-| [Release](.github/workflows/release.yml) | tag `v*` | Quality Gate → 打包 `jy-skill.zip` → GitHub Release（tag 须与 `package.json` version 一致） |
+| [CI](.github/workflows/ci.yml) | push / PR → `main`、手动 `workflow_dispatch` | 调用 [Quality Gate](.github/workflows/quality-gate.yml) |
+| [Quality Gate](.github/workflows/quality-gate.yml) | 被 CI / Release 调用 | 7 项并行检查 + **Gate** 汇总 Job |
+| [Release](.github/workflows/release.yml) | tag `v*` | Quality Gate → npm + GitHub Release（tag 须与 `package.json` version 一致） |
+
+**Quality Gate 并行 Job**
+
+| Job | 命令 | 说明 |
+|-----|------|------|
+| Lint · Format | `pnpm run check` | oxlint + oxfmt |
+| Typecheck | `pnpm run typecheck` | TypeScript |
+| Validate | `pnpm run validate` | SKILL 元数据、assets、版本对齐、文档链接 |
+| Pack · Verify | `pnpm run validate:pack` | zip 发版包 |
+| NPM pack · Verify | `pnpm run validate:npm` | npm tarball 内容 |
+| Dependency audit | `pnpm run audit:ci` | `pnpm audit --audit-level=high` |
+| Test · Coverage | `pnpm run test:coverage` | Vitest 100% 覆盖率 + Step Summary / artifact |
+
+**Branch protection 建议**（GitHub 仓库 Settings → Branches）：将 **Quality Gate / Gate** 设为 Required status check，确保 PR 必须通过全部门禁方可合并。
 
 Dependabot 每周检查 GitHub Actions 与 npm 依赖更新。
 
@@ -74,11 +150,12 @@ Dependabot 每周检查 GitHub Actions 与 npm 依赖更新。
 pnpm run ci
 ```
 
-打包 skill 发版包（与 Release 工作流相同）：
+打包 skill 发版包（Release 工作流在 tag 推送时使用）：
 
 ```bash
 pnpm run pack:skill
-node scripts/pack-skill.mjs --verify
+pnpm run validate:pack     # zip 打包校验
+pnpm run validate:npm      # npm pack 内容校验
 ```
 
 ## 开发与测试
@@ -88,9 +165,11 @@ pnpm install
 pnpm run ci                 # 与 CI 门禁一致
 pnpm run check             # oxlint + oxfmt
 pnpm run typecheck         # TypeScript 6
-pnpm run validate          # SKILL.md 格式 + 资产校验
-pnpm run validate:meta     # 仅 SKILL.md frontmatter
-pnpm run validate:skill    # 仅 assets/
+pnpm run validate          # meta + assets + versions + docs
+pnpm run validate:pack     # 打包 zip 并校验
+pnpm run validate:versions # package.json 与 SKILL.md 版本
+pnpm run validate:docs     # 必备文档与链接
+pnpm run audit:ci          # 依赖安全（high+）
 pnpm test                  # Vitest 全部测试
 pnpm run test:logic        # 仅 game-logic 公式单元测试
 pnpm run test:engine       # 仅 game-engine 集成测试
@@ -119,8 +198,12 @@ jy/
 │   ├── config-loader.ts  # assets 加载
 │   ├── persistence.ts    # 存档读写
 │   ├── validate-skill.ts # SKILL.md 格式校验
-│   └── validate-assets.ts
+│   ├── validate-assets.ts
+│   ├── validate-pack.ts
+│   ├── validate-versions.ts
+│   └── validate-docs.ts
 ├── references/
+│   ├── agent-handbook.md # 智能体操作手册（规则/API/地图）
 │   ├── player-guide.md   # 玩家手册
 │   └── game-design.md
 ├── assets/

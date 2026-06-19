@@ -4,6 +4,11 @@
 
 import type { DEFAULT_ATTRIBUTES } from './game-logic';
 
+export interface CharacterBuffs {
+  attack?: number;
+  agility?: number;
+}
+
 export interface Character {
   name: string;
   level: number;
@@ -19,6 +24,8 @@ export interface Character {
   equipment: { weapon: string | null; armor: string | null };
   skills: string[];
   skillLevels: Record<string, number>;
+  skillExp?: Record<string, number>;
+  buffs?: CharacterBuffs;
 }
 
 export interface Inventory {

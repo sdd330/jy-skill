@@ -1,27 +1,54 @@
 ---
 name: jy
 description: >-
-  金庸群侠传对话式武侠 RPG：移动、NPC 对话、商店、物品、武功学习与回合制战斗，支持存档与新人引导。
-  Use when the user says jy, 开始游戏, 帮助, 怎么玩, or 金庸群侠传, or when driving game actions via scripts/game-engine.ts.
+  金庸群侠传对话式武侠 RPG：移动、NPC、商店、物品、武功、回合战斗、存档与新人引导。
+  Agent 须读 references/agent-handbook.md 掌握完整玩法与 API；玩家说 jy/开始游戏/帮助/金庸群侠传时使用。
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.3.1"
 disable-model-invocation: false
 ---
 
 # 金庸群侠传 · 对话武侠 RPG
 
-独立 Cursor Agent Skill，自包含 `scripts/`、`assets/` 与存档，不依赖外部 monorepo。
+独立 Cursor Agent Skill，自包含 `scripts/`、`assets/` 与存档。
+
+## 安装
+
+```bash
+npm install @sdd330dev/jy-skill --save-dev && npx jy-skill install
+```
+
+全局：`npm install -g @sdd330dev/jy-skill && jy-skill install --global`
+
+## 智能体必读
+
+**完整玩法、API、战斗循环、地图与禁忌** → [references/agent-handbook.md](references/agent-handbook.md)（操作手册，优先阅读）
+
+| 文档 | 读者 | 内容 |
+|------|------|------|
+| [agent-handbook.md](references/agent-handbook.md) | Agent | 规则、API、战斗、地图速查、错误清单 |
+| [AGENTS.md](AGENTS.md) | Agent | 武侠叙事、首登/帮助模板、输出格式 |
+| [player-guide.md](references/player-guide.md) | 玩家 | FAQ、地图、生存技巧 |
+| [game-design.md](references/game-design.md) | 开发 | 公式与设计细节 |
+
+**硬性约束**
+
+- 唯一 API：`scripts/game-engine.ts`；唯一公式：`scripts/game-logic.ts`
+- 禁止手改存档、禁止编造伤害/价格/地图连接
+- `moveTo` 返回 `encounter` 时**必须** `startBattle` 并打完
+- 每轮回复末尾附 `getStatus(state)` 状态栏
 
 ## 何时使用
 
-玩家说「jy」「开始游戏」「金庸群侠传」，或需要以自然语言驱动武侠冒险时加载本 skill。
+玩家说「jy」「开始游戏」「金庸群侠传」，或以自然语言进行武侠冒险时加载本 skill。
 
-**帮助与引导**：玩家说「帮助」「怎么玩」「jy 帮助」「指令」时，遵循 [AGENTS.md](AGENTS.md) 帮助模板回复；完整玩家向说明见 [references/player-guide.md](references/player-guide.md)。
-
-**新玩家首登**：无存档时 `loadOrCreateGame` 创建新角色，须按 [AGENTS.md](AGENTS.md)「新玩家首登」给出欢迎语、初始处境与三条建议。
-
-开始游戏后须同时遵循 [AGENTS.md](AGENTS.md) 叙事规范（武侠文风、沉浸感、注意事项）。
+| 玩家说法 | Agent 动作 |
+|----------|------------|
+| jy / 开始游戏 | `loadOrCreateGame`；`isNewGame` 则首登引导（见 AGENTS.md） |
+| 帮助 / 怎么玩 | `getLocationInfo` + 帮助模板，勿堆砌 API 名 |
+| 重新开始 / 新游戏 | `restartGame()` |
+| 其他 | 解析意图 → 对应 API → 武侠叙述 + 状态栏 |
 
 ## 快速开始
 
@@ -31,159 +58,151 @@ import {
   createNewGame,
   saveGameState,
   moveTo,
+  startBattle,
+  attackEnemy,
+  enemyAttack,
+  isDead,
   getStatus,
+  getLocationInfo,
+  restartGame,
 } from './scripts/game-engine'
 
-// 开始或继续（无存档时自动创建并落盘）
-let state = loadOrCreateGame(createNewGame, '主角')
+const { state, isNewGame } = loadOrCreateGame(createNewGame, '主角')
 
-// 状态变更操作会自动存档；也可每轮回复结束前幂等调用
-const result = moveTo(state, '平安镇')
-saveGameState(state) // 可选
+const move = moveTo(state, '山洞')
+if (move.encounter) {
+  const { enemies } = startBattle(state, move.encounter)!
+  // 战斗循环见下文
+}
+
+saveGameState(state) // 可选，引擎已自动存档
 ```
 
-命令行：`jy` 开始/继续 · `jy 帮助` 查看帮助
+## 每轮工作流
 
-## Agent 工作流
+1. **加载**：无 `state` 时 `loadOrCreateGame(createNewGame, '主角')`
+2. **执行**：按玩家意图调用 API（复合指令分步执行）
+3. **遇敌**：`moveTo` → `encounter?` → `startBattle` → 战斗循环
+4. **死亡**：`isDead` → 叙述结算 → `restartGame()`
+5. **输出**：武侠叙述 + `getStatus(state)` 状态栏
 
-### 玩家意图 → API
+## 玩家意图 → API
 
-| 玩家意图 | 调用函数 |
-|----------|----------|
-| 移动 | `moveTo(state, destination)` |
-| 对话 | `talkTo(state, npcName)` |
-| 购买 | `buyItem(state, itemName)` |
-| 使用 | `useItem(state, itemName)` |
-| 装备 | `equipItem(state, itemName)` |
-| 学武功 | `learnSkill(state, skillName)` |
-| 休息 | `rest(state)` |
-| 战斗 | `startBattle(state, enemyName)` |
-| 查询状态 | `getStatus(state)` / `getInventory(state)` / `getSkills(state)` |
+| 意图 | API | 要点 |
+|------|-----|------|
+| 移动 / 随便走走 | `moveTo(state, dest)` | `dest='random'` 随机相邻；返回 `encounter?` |
+| 对话 | `talkTo(state, npc)` | NPC 名须精确；`'random'` 随机 |
+| 购买 | `buyItem(state, item)` | 仅当前地点商店 |
+| 使用 | `useItem(state, item)` | 无收益不消耗 |
+| 装备 | `equipItem(state, item)` | 武器/防具 |
+| 学武功 | `learnSkill(state, skill)` | 须存在于 assets |
+| 休息 | `rest(state)` | 满状态并解毒解伤 |
+| 战斗 | `startBattle` + 循环 | 见下节 |
+| 查看 | `getStatus` / `getInventory` / `getSkills` | |
+| 帮助 | `getLocationInfo` | 当前可为之事 |
+| 重开 | `restartGame(name?)` | 删档+新建+落盘 |
 
-每次状态变更后引擎自动写入 `save/game-state.json`；Agent 仍可在每轮回复结束前调用 `saveGameState(state)`（幂等）。
+## 战斗循环（必遵）
 
-### 战斗循环
+```typescript
+const battle = startBattle(state, enemyName)
+if (!battle.success || !battle.enemies) return
 
-1. `startBattle(state, enemyName)` 获取敌人列表
-2. 循环直到战斗结束：
-   - `attackEnemy(state, enemies, targetIndex)` 或 `useSkillInBattle(state, enemies, skillName, targetIndex)` 攻击
-   - `enemyAttack(state, enemies)` 敌人反击
-   - `isDead(state)` 检查死亡
-3. 战斗中的角色状态变更会自动存档（敌人列表为内存临时状态）
+let enemies = battle.enemies
 
-### 死亡重置
+while (enemies.some((e) => e.hp > 0) && !isDead(state)) {
+  const i = enemies.findIndex((e) => e.hp > 0)
+  attackEnemy(state, enemies, i)
+  // 或 useSkillInBattle(state, enemies, '基本拳法', i)
 
-`isDead(state)` 为 true 时：叙述死亡 → 显示结算（等级、存活周数、资产）→ `deleteSave()` → `createNewGame()` 重新开始。
+  if (enemies.some((e) => e.hp > 0) && !isDead(state)) {
+    enemyAttack(state, enemies)
+  }
+}
 
-### 输出格式
+if (isDead(state)) {
+  // 死亡叙述 → restartGame()
+}
+```
 
-每次回复末尾附带状态栏：
+- `enemies` 仅存于内存，不写入存档
+- `targetIndex` 选第一个 `hp > 0` 的敌人
+- 伤害/经验以 API 为准，叙述时引用 `message`
+
+## 核心规则摘要
+
+| 系统 | 规则 |
+|------|------|
+| 移动 | 仅相邻地图；每次 -5 体力、+1 周；中毒/受伤每周掉血 |
+| 山洞遇敌 | 抵达后 20% 概率，敌人：山贼/强盗/老虎 |
+| 物品 | 满状态使用不扣物品；实际恢复量 ≤ 配置值 |
+| 升级 | 经验 = floor(100×1.5^(Lv-1))；上限 Lv.100 |
+| 伤害 | 武力+技能攻击-防御；±20% 波动；最低 1 |
+
+公式详见 [game-design.md](references/game-design.md) 与 `game-logic.ts`。
+
+## 输出格式
 
 ```
-👤 角色名 | Lv.等级 | ❤️ 生命/最大 | 💠 内力/最大 | ⚡ 体力/100
+👤 角色名 | Lv.等级 | 经验: …
+❤️ hp/maxHp | 💠 mp/maxMp | ⚡ stamina/100
 💰 银两 | 📍 位置 | 📅 第N周
 ```
 
+满级显示「经验: N（已满级）」；中毒/受伤时额外一行。
+
 ## 交互示例
 
-**示例 1 — 移动购物**
+**移动 + 遇敌 + 战斗**
 
 ```
-玩家: "去平安镇买把铁剑"
-→ moveTo(state, '平安镇')   // 自动存档
-→ buyItem(state, '铁剑')    // 自动存档
-→ 武侠叙述购买结果 + 状态栏
+玩家: "进山洞看看"
+→ moveTo(state, '山洞')  // 若 encounter='山贼'
+→ startBattle → 战斗循环 → getStatus
 ```
 
-**示例 2 — 对话**
+**复合操作**
 
 ```
-玩家: "和店小二聊聊"
-→ talkTo(state, '店小二')
-→ 叙述对话内容 + 状态栏
+玩家: "去平安镇买铁剑装备上"
+→ moveTo('平安镇') → buyItem('铁剑') → equipItem('铁剑')
 ```
 
-**示例 3 — 战斗**
+**首登 / 帮助 / 重开** — 见 [AGENTS.md](AGENTS.md) 与 [agent-handbook.md](references/agent-handbook.md) 第 9 节。
 
-```
-玩家: "攻击山贼"
-→ startBattle(state, '山贼')
-→ attackEnemy(state, enemies, 0) → enemyAttack(state, enemies) → 重复直至结束
-→ 叙述战斗过程与结果 + 状态栏
-```
+## API 索引
 
-**示例 4 — 新人求帮助**
+| 类别 | 函数 |
+|------|------|
+| 存档 | `loadOrCreateGame`, `loadGameState`, `saveGameState`, `deleteSave`, `restartGame` |
+| 初始化 | `createNewGame` |
+| 查询 | `getStatus`, `getInventory`, `getSkills`, `getLocationInfo` |
+| 探索 | `moveTo`, `talkTo`, `rest` |
+| 物品 | `buyItem`, `useItem`, `equipItem`, `learnSkill` |
+| 战斗 | `startBattle`, `attackEnemy`, `useSkillInBattle`, `enemyAttack`, `isDead` |
 
-```
-玩家: "jy 帮助" / "怎么玩"
-→ 不调用战斗/移动 API（除非玩家同时在玩）
-→ 按 AGENTS.md 帮助模板：自然语言说明 + 常用说法 + 当前地点可为之事
-→ 可引用 player-guide.md 中的地图/战斗要点 + 状态栏
-```
+参数、返回值与失败原因 → [agent-handbook.md](references/agent-handbook.md) 第 5 节。
 
-**示例 5 — 新游戏首登**
+## 数据与存档
 
-```
-玩家: "jy"（无存档）
-→ loadOrCreateGame(createNewGame, '主角')
-→ 武侠欢迎 + 小村处境 + 三条建议（村长/平安镇/查看背包）
-→ getStatus(state) 生成状态栏
-```
+- 地图/NPC/商店/敌人：`assets/templates.json`（**勿编造**）
+- 武功/物品数值：`assets/skills.json`、`assets/items.json`
+- 存档：`save/game-state.json`（引擎原子写入，自动迁移旧档）
 
 ## 目录
 
 ```
 jy/
 ├── SKILL.md
-├── AGENTS.md              # 智能体叙事与流程
-├── vite.config.ts         # Vite 8 + Vitest
-├── tsconfig.json          # TypeScript 6
-├── .oxlintrc.json         # Oxlint
-├── .oxfmtrc.json          # Oxfmt
-├── scripts/
-│   ├── game-engine.ts     # 唯一 API 入口
-│   ├── game-logic.ts      # 核心公式
-│   ├── config-loader.ts   # assets 配置加载
-│   ├── persistence.ts     # save/game-state.json
-│   ├── validate-skill.ts  # SKILL.md 格式校验
-│   └── validate-assets.ts # 资产校验 CLI
+├── AGENTS.md
 ├── references/
-│   ├── player-guide.md  # 玩家手册（帮助、地图、FAQ）
-│   └── game-design.md   # 完整设计文档
-├── assets/                # 116 角色 / 武功 / 物品 / 地图
-└── save/
-    └── .gitkeep           # 运行时存档目录（game-state.json 自动创建）
+│   ├── agent-handbook.md   # Agent 操作手册（必读）
+│   ├── player-guide.md
+│   └── game-design.md
+├── scripts/
+│   ├── game-engine.ts      # 唯一 API
+│   ├── game-logic.ts
+│   ├── config-loader.ts
+│   └── persistence.ts
+└── assets/
 ```
-
-## API 入口（game-engine.ts）
-
-| 类别 | 函数 |
-|------|------|
-| 存档 | `loadOrCreateGame`, `loadGameState`, `saveGameState`, `deleteSave` |
-| 初始化 | `createNewGame(name)` |
-| 查询 | `getStatus`, `getInventory`, `getSkills` |
-| 探索 | `moveTo`, `talkTo`, `rest` |
-| 物品 | `buyItem`, `useItem`, `equipItem`, `learnSkill` |
-| 战斗 | `startBattle`, `attackEnemy`, `useSkillInBattle`, `enemyAttack`, `isDead` |
-
-叙事细节、新人引导与完整流程见 [AGENTS.md](AGENTS.md)；玩家手册见 [references/player-guide.md](references/player-guide.md)。
-
-## 核心公式
-
-数值计算**必须**遵循 `scripts/game-logic.ts`：
-
-- 伤害 = 武力 + 技能攻击 - 防御（左右互搏 ×1.5，武学常识 +N/10，±20% 波动，最低 1）
-- 升级经验 = floor(100 × 1.5^(等级-1))
-- 内力消耗 = 基础消耗 × ((等级+1)/2)
-
-详细公式与系统设计见 [references/game-design.md](references/game-design.md)。
-
-## 数据表
-
-地图、武功、物品、敌人等完整数据在 `assets/` 目录，由 `config-loader.ts` 加载。**不要在 SKILL 中硬编码数值。**
-
-## 自动记忆
-
-引擎在每次状态变更（移动、购物、战斗等）后自动写入 `save/game-state.json`（原子替换，防写入中断损坏）。Agent 可在每轮回复结束前额外调用 `saveGameState(state)`（幂等）。
-
-开始游戏时调用 `loadOrCreateGame(createNewGame)`：无存档则新建并落盘，有存档则继续。

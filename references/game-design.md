@@ -5,7 +5,7 @@
 | 读者 | 推荐阅读 |
 |------|----------|
 | 玩家 | [player-guide.md](player-guide.md) — 上手、地图、战斗、FAQ |
-| Agent | [SKILL.md](../SKILL.md) + [AGENTS.md](../AGENTS.md) — 工作流与叙事 |
+| Agent | [agent-handbook.md](agent-handbook.md) — 完整规则与 API；[SKILL.md](../SKILL.md) + [AGENTS.md](../AGENTS.md) — 入口与叙事 |
 | 开发者 | 本文档 + `scripts/game-logic.ts` — 公式与设计参考 |
 
 **说明**：当前对话版引擎采用**地点跳转式**探索（相邻地图移动、自然语言驱动），而非下方部分章节描述的网格战棋；实现以 `scripts/game-engine.ts` 为准。
@@ -54,7 +54,8 @@
 
 - 7 个地点：小村、平安镇、山洞、华山、桃花岛、全真教、光明顶
 - 只能在相邻地点间移动；移动消耗体力并推进周数
-- 支持 NPC 对话、商店购买；山洞等区域可触发战斗
+- 支持 NPC 对话、商店购买
+- **随机遇敌**：配置于 `assets/templates.json` 各地图 `encounters` 字段；进入险地（如山洞，20% 概率）时 `moveTo` 返回 `encounter`，Agent 须接着调用 `startBattle`
 
 ### 地图系统（完整设计参考）
 

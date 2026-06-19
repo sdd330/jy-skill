@@ -13,10 +13,13 @@ import {
   learnSkill,
   useItem,
   rest,
+  consumeItemStack,
   isDead,
   getStatus,
   getInventory,
   getSkills,
+  getLocationInfo,
+  restartGame,
   advanceWeek,
   loadGameState,
   saveGameState,
@@ -48,6 +51,10 @@ describe('config-loader', () => {
     const map = getMap('小村');
     expect(map?.npcs).toContain('村长');
     expect(map?.connections).toContain('平安镇');
+
+    const cave = getMap('山洞');
+    expect(cave?.encounterRate).toBe(20);
+    expect(cave?.encounterEnemies).toEqual(['山贼', '强盗', '老虎']);
   });
 
   it('loads skills from assets', () => {
@@ -136,8 +143,9 @@ describe('game-engine', () => {
   it('loadOrCreateGame loads existing save', () => {
     const state = createNewGame('续玩');
     saveGameState(state);
-    const loaded = loadOrCreateGame(createNewGame, '新角色');
+    const { state: loaded, isNewGame } = loadOrCreateGame(createNewGame, '新角色');
     expect(loaded.character.name).toBe('续玩');
+    expect(isNewGame).toBe(false);
   });
 });
 
@@ -190,8 +198,9 @@ describe('game-engine auto-save', () => {
 
   it('loadOrCreateGame persists new game on first start', () => {
     expect(existsSync(SAVE_FILE)).toBe(false);
-    const state = loadOrCreateGame(createNewGame, '新手');
+    const { state, isNewGame } = loadOrCreateGame(createNewGame, '新手');
     expect(state.character.name).toBe('新手');
+    expect(isNewGame).toBe(true);
     expect(existsSync(SAVE_FILE)).toBe(true);
   });
 });
@@ -355,6 +364,15 @@ describe('game-engine battle', () => {
     const status = getStatus(state);
     expect(status).toContain(`经验: 0/${getExpForLevel(2)}`);
   });
+
+  it('getStatus shows max level exp without overflow threshold', () => {
+    const state = createNewGame('主角');
+    state.character.level = 100;
+    state.character.exp = 5000;
+    const status = getStatus(state);
+    expect(status).toContain('经验: 5000（已满级）');
+    expect(status).not.toContain('经验: 5000/');
+  });
 });
 
 describe('game-engine coverage', () => {
@@ -391,6 +409,14 @@ describe('game-engine coverage', () => {
     const state = createNewGame('主角');
     expect(getSkills(state)).toContain('基本拳法');
 
+    delete state.character.skillLevels['基本拳法'];
+    const skillExp = state.character.skillExp!;
+    delete skillExp['基本拳法'];
+    expect(getSkills(state)).toContain('熟练 0/100');
+
+    state.character.skillExp = { 基本拳法: 42 };
+    expect(getSkills(state)).toContain('熟练 42/100');
+
     state.character.skills = [];
     expect(getSkills(state)).toContain('还没有学会任何武功');
   });
@@ -425,6 +451,59 @@ describe('game-engine coverage', () => {
     moveTo(state, '小村');
     moveTo(state, '平安镇');
     expect(state.visitedMaps.filter((m) => m === '平安镇').length).toBe(count);
+  });
+
+  it('moveTo triggers random encounter in cave when roll succeeds', () => {
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValueOnce(0);
+    const state = createNewGame('主角');
+    const result = moveTo(state, '山洞');
+    expect(result.success).toBe(true);
+    expect(result.encounter).toBe('山贼');
+    expect(result.message).toContain('埋伏');
+  });
+
+  it('moveTo skips encounter when roll fails', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const state = createNewGame('主角');
+    const result = moveTo(state, '山洞');
+    expect(result.success).toBe(true);
+    expect(result.encounter).toBeUndefined();
+  });
+
+  it('getLocationInfo handles unknown location and sparse maps', () => {
+    const state = createNewGame('主角');
+    state.location = '虚空';
+    expect(getLocationInfo(state)).toBe('当前位置未知');
+
+    vi.spyOn(configLoader, 'getMap').mockReturnValue({
+      npcs: [],
+      shops: [],
+      connections: [],
+      npcDialogs: {},
+    });
+    state.location = '荒原';
+    expect(getLocationInfo(state)).toBe('📍 荒原');
+  });
+
+  it('getLocationInfo lists connections, npcs, shops, and danger hint', () => {
+    const state = createNewGame('主角');
+    expect(getLocationInfo(state)).toContain('小村');
+    expect(getLocationInfo(state)).toContain('村长');
+
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    moveTo(state, '山洞');
+    expect(getLocationInfo(state)).toContain('歹人埋伏');
+  });
+
+  it('restartGame clears save and creates fresh character', () => {
+    const state = createNewGame('旧角色');
+    state.character.level = 10;
+    saveGameState(state);
+
+    const fresh = restartGame('新侠');
+    expect(fresh.character.name).toBe('新侠');
+    expect(fresh.character.level).toBe(1);
+    expect(loadGameState()?.character.name).toBe('新侠');
   });
 
   it('talkTo handles unknown map, random npc, missing npc, and fallback dialog', () => {
@@ -502,14 +581,33 @@ describe('game-engine coverage', () => {
 
     state.character.poison = 30;
     state.inventory.items.push({ id: '36', name: '解毒丸', count: 1 });
-    useItem(state, '解毒丸');
+    const dePoisonResult = useItem(state, '解毒丸');
+    expect(dePoisonResult.success).toBe(true);
+    expect(dePoisonResult.message).toContain('解除中毒');
     expect(state.character.poison).toBe(0);
 
     const state2 = createNewGame('主角');
     state2.inventory.items = [{ id: '30', name: '金创药', count: 1 }];
     state2.character.hp = 95;
     useItem(state2, '金创药');
-    expect(state2.inventory.items.find((i) => i.name === '金创药')).toBeUndefined();
+    expect(state2.inventory.items).toHaveLength(0);
+
+    const fullHp = createNewGame('主角');
+    const countBefore = fullHp.inventory.items.find((i) => i.name === '金创药')!.count;
+    expect(useItem(fullHp, '金创药').success).toBe(false);
+    expect(fullHp.inventory.items.find((i) => i.name === '金创药')!.count).toBe(countBefore);
+
+    const noPoison = createNewGame('主角');
+    noPoison.inventory.items.push({ id: '36', name: '解毒丸', count: 1 });
+    expect(useItem(noPoison, '解毒丸').message).toContain('没有中毒');
+
+    const fullMp = createNewGame('主角');
+    fullMp.inventory.items.push({ id: '31', name: '小还丹', count: 1 });
+    expect(useItem(fullMp, '小还丹').message).toContain('当前无需使用');
+
+    const fullStamina = createNewGame('主角');
+    fullStamina.inventory.items = [{ id: '35', name: '干粮', count: 1 }];
+    expect(useItem(fullStamina, '干粮').message).toContain('当前无需使用');
   });
 
   it('equipItem handles weapon, armor, and errors', () => {
@@ -633,8 +731,9 @@ describe('game-engine coverage', () => {
 
   it('loadOrCreateGame creates new game when no save exists', () => {
     deleteSave();
-    const state = loadOrCreateGame(createNewGame, '新手');
+    const { state, isNewGame } = loadOrCreateGame(createNewGame, '新手');
     expect(state.character.name).toBe('新手');
+    expect(isNewGame).toBe(true);
   });
 
   it('createNewGame uses defaults when template omits skills and startLocation', () => {
@@ -675,5 +774,420 @@ describe('game-engine coverage', () => {
     expect(attackEnemy(state, enemies, 0).message).toContain('造成');
     enemyAttack(state, enemies);
     expect(state.character.hp).toBeLessThan(100);
+  });
+
+  it('rejects actions when dead including rest revival', () => {
+    const state = createNewGame('主角');
+    state.character.hp = 0;
+    expect(rest(state).success).toBe(false);
+    expect(state.character.hp).toBe(0);
+    expect(moveTo(state, '平安镇').success).toBe(false);
+    expect(startBattle(state, '山贼').success).toBe(false);
+    expect(buyItem(state, '金创药').success).toBe(false);
+  });
+
+  it('moveTo rejects when stamina insufficient', () => {
+    const state = createNewGame('主角');
+    state.character.stamina = 0;
+    expect(moveTo(state, '平安镇').success).toBe(false);
+    expect(state.location).toBe('小村');
+  });
+
+  it('useItem applies buff pills and skill books', () => {
+    const state = createNewGame('主角');
+    state.inventory.items.push({ id: '37', name: '大力丸', count: 1 });
+    const pill = useItem(state, '大力丸');
+    expect(pill.success).toBe(true);
+    expect(state.character.buffs?.attack).toBe(20);
+
+    state.inventory.items.push({ id: '38', name: '疾风丸', count: 1 });
+    useItem(state, '疾风丸');
+    expect(state.character.buffs?.agility).toBe(20);
+
+    state.character.attributes.iq = 100;
+    state.character.exp = 2000;
+    state.inventory.items.push({ id: '42', name: '独孤九剑剑谱', count: 1 });
+    const book = useItem(state, '独孤九剑剑谱');
+    expect(book.success).toBe(true);
+    expect(state.character.skills).toContain('独孤九剑');
+  });
+
+  it('enemyAttack from snake applies poison debuff', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const state = createNewGame('主角');
+    const battle = startBattle(state, '毒蛇');
+    enemyAttack(state, battle.enemies!);
+    expect(state.character.poison).toBe(15);
+    expect(enemyAttack(state, battle.enemies!).message).toContain('麻痹');
+  });
+
+  it('useSkillInBattle grants skill exp and can level up skill', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);
+    const state = createNewGame('主角');
+    state.character.mp = 200;
+    state.character.skillExp = { 基本拳法: 99 };
+    const battle = startBattle(state, '山贼');
+    useSkillInBattle(state, battle.enemies!, '基本拳法', 0);
+    expect(state.character.skillLevels['基本拳法']).toBe(1);
+    expect(state.character.skillExp!['基本拳法']).toBeLessThan(100);
+  });
+
+  it('grantBattleExp uses integer exp values', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);
+    const state = createNewGame('主角');
+    const battle = startBattle(state, '山贼');
+    const enemies = battle.enemies!;
+    enemies[0].hp = 1;
+    attackEnemy(state, enemies, 0);
+    expect(Number.isInteger(state.character.exp)).toBe(true);
+  });
+
+  it('covers skill battle branches: heal, depoison, absorb, poison', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);
+    const state = createNewGame('主角');
+    state.character.mp = 500;
+    state.character.stamina = 100;
+    learnSkill(state, '医疗术');
+    learnSkill(state, '解毒术');
+    learnSkill(state, '北冥神功');
+    learnSkill(state, '用毒术');
+
+    const battle = startBattle(state, '山贼');
+    const enemies = battle.enemies!;
+
+    state.character.hp = 50;
+    const heal = useSkillInBattle(state, enemies, '医疗术', 0);
+    expect(heal.success).toBe(true);
+    expect(heal.message).toContain('恢复');
+
+    state.character.poison = 30;
+    const cure = useSkillInBattle(state, enemies, '解毒术', 0);
+    expect(cure.success).toBe(true);
+    expect(cure.message).toContain('毒素');
+
+    state.character.mp = 10;
+    const absorb = useSkillInBattle(state, enemies, '北冥神功', 0);
+    expect(absorb.success).toBe(true);
+    expect(absorb.message).toContain('吸取');
+
+    const poison = useSkillInBattle(state, enemies, '用毒术', 0);
+    expect(poison.success).toBe(true);
+    expect(poison.message).toContain('剧毒');
+  });
+
+  it('covers heal at full hp and depoison when not poisoned', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);
+    const state = createNewGame('主角');
+    state.character.mp = 200;
+    learnSkill(state, '医疗术');
+    learnSkill(state, '解毒术');
+    const battle = startBattle(state, '山贼');
+    useSkillInBattle(state, battle.enemies!, '医疗术', 0);
+    const noHeal = useSkillInBattle(state, battle.enemies!, '医疗术', 0);
+    expect(noHeal.message).toContain('气血已足');
+
+    const noPoison = useSkillInBattle(state, battle.enemies!, '解毒术', 0);
+    expect(noPoison.message).toContain('并未中毒');
+  });
+
+  it('enemyAttack when player dead returns early', () => {
+    const state = createNewGame('主角');
+    state.character.hp = 0;
+    const battle = startBattle(state, '山贼');
+    expect(enemyAttack(state, battle.enemies!).playerDefeated).toBe(true);
+  });
+
+  it('enemyAttack from tiger applies hurt debuff', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const state = createNewGame('主角');
+    const battle = startBattle(state, '老虎');
+    enemyAttack(state, battle.enemies!);
+    expect(state.character.hurt).toBe(10);
+    expect(enemyAttack(state, battle.enemies!).message).toContain('内伤');
+  });
+
+  it('rejects attack and skill when stamina insufficient', () => {
+    const state = createNewGame('主角');
+    state.character.stamina = 0;
+    const battle = startBattle(state, '山贼');
+    const enemies = battle.enemies!;
+    expect(attackEnemy(state, enemies, 0).message).toContain('体力不足');
+    expect(useSkillInBattle(state, enemies, '基本拳法', 0).message).toContain('体力不足');
+  });
+
+  it('buyItem rejects when inventory type cap reached', () => {
+    const state = createNewGame('主角');
+    state.inventory.silver = 99999;
+    moveTo(state, '平安镇');
+    for (let i = 0; i < 100; i++) {
+      state.inventory.items.push({ id: String(i), name: `物品${i}`, count: 1 });
+    }
+    expect(buyItem(state, '铁剑').success).toBe(false);
+  });
+
+  it('useItem skill book rejects unmet requirements', () => {
+    const state = createNewGame('主角');
+    state.inventory.items.push({ id: '40', name: '九阴真经', count: 1 });
+    expect(useItem(state, '九阴真经').success).toBe(false);
+
+    state.character.attributes.iq = 100;
+    expect(useItem(state, '九阴真经').success).toBe(false);
+
+    state.character.exp = 2000;
+    useItem(state, '九阴真经');
+    state.inventory.items.push({ id: '40', name: '九阴真经', count: 1 });
+    expect(useItem(state, '九阴真经').message).toContain('已经学会');
+  });
+
+  it('useItem rejects duplicate buff pills', () => {
+    const state = createNewGame('主角');
+    state.inventory.items.push({ id: '37', name: '大力丸', count: 2 });
+    useItem(state, '大力丸');
+    expect(useItem(state, '大力丸').message).toContain('效果仍在');
+  });
+
+  it('useItem rejects duplicate agility buff', () => {
+    const state = createNewGame('主角');
+    state.inventory.items.push({ id: '38', name: '疾风丸', count: 2 });
+    useItem(state, '疾风丸');
+    expect(useItem(state, '疾风丸').message).toContain('效果仍在');
+  });
+
+  it('resolveEnemyTemplateName matches numbered enemy names', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const state = createNewGame('主角');
+    const battle = startBattle(state, '山贼');
+    expect(battle.enemies!.length).toBeGreaterThan(1);
+    enemyAttack(state, battle.enemies!);
+    expect(state.character.hp).toBeLessThan(100);
+  });
+
+  it('enemyAttack handles unknown enemy template names', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const state = createNewGame('主角');
+    enemyAttack(state, [{ name: '神秘怪', hp: 10, maxHp: 10, attack: 5, defence: 0 }]);
+    expect(state.character.hp).toBeLessThan(100);
+  });
+
+  it('rejects equip and learn when dead', () => {
+    const state = createNewGame('主角');
+    state.inventory.items.push({ id: '10', name: '铁剑', count: 1 });
+    state.character.hp = 0;
+    expect(equipItem(state, '铁剑').success).toBe(false);
+    expect(learnSkill(state, '六脉神剑').success).toBe(false);
+  });
+
+  it('skill exp stops at max skill level', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);
+    const state = createNewGame('主角');
+    state.character.mp = 500;
+    state.character.skillLevels['基本拳法'] = 9;
+    state.character.skillExp = { 基本拳法: 50 };
+    const battle = startBattle(state, '山贼');
+    useSkillInBattle(state, battle.enemies!, '基本拳法', 0);
+    expect(state.character.skillLevels['基本拳法']).toBe(9);
+    expect(state.character.skillExp!['基本拳法']).toBe(50);
+  });
+
+  it('useItem rejects skill book with missing skill data', () => {
+    const state = createNewGame('主角');
+    state.inventory.items.push({ id: '99', name: '假经书', count: 1 });
+    vi.spyOn(configLoader, 'getItem').mockReturnValue({
+      id: 99,
+      name: '假经书',
+      desc: '',
+      type: 2,
+      equipmentType: -1,
+      price: 0,
+      addAttack: 0,
+      addDefence: 0,
+      useAddHp: 0,
+      useAddMp: 0,
+      useAddStamina: 0,
+      useDePoison: 0,
+      skillId: 9999,
+    });
+    vi.spyOn(configLoader, 'getSkillById').mockReturnValue(undefined);
+    expect(useItem(state, '假经书').success).toBe(false);
+    expect(useItem(state, '假经书').message).toContain('内容残缺');
+  });
+
+  it('useSkillInBattle rejects when player is dead', () => {
+    const state = createNewGame('主角');
+    state.character.hp = 0;
+    const battle = startBattle(state, '山贼');
+    expect(useSkillInBattle(state, battle.enemies!, '基本拳法', 0).success).toBe(false);
+  });
+
+  it('skill exp levels up multiple tiers in one use', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);
+    const state = createNewGame('主角');
+    state.character.mp = 500;
+    state.character.skillExp = { 基本拳法: 295 };
+    const battle = startBattle(state, '山贼');
+    useSkillInBattle(state, battle.enemies!, '基本拳法', 0);
+    expect(state.character.skillLevels['基本拳法']).toBe(2);
+  });
+
+  it('rejects useItem when dead', () => {
+    const state = createNewGame('主角');
+    state.character.hp = 0;
+    state.inventory.items.push({ id: '30', name: '金创药', count: 1 });
+    expect(useItem(state, '金创药').success).toBe(false);
+  });
+
+  it('attackEnemy rejects when player is dead', () => {
+    const state = createNewGame('主角');
+    state.character.hp = 0;
+    const enemies = [{ name: '山贼', hp: 80, maxHp: 80, attack: 10, defence: 5 }];
+    expect(attackEnemy(state, enemies, 0).message).toContain('昏迷');
+  });
+
+  it('buyItem stacks existing item even near inventory cap', () => {
+    const state = createNewGame('主角');
+    state.inventory.silver = 99999;
+    state.inventory.items = [{ id: '10', name: '铁剑', count: 1 }];
+    for (let i = 0; i < 99; i++) {
+      state.inventory.items.push({ id: String(i + 100), name: `物品${i}`, count: 1 });
+    }
+    moveTo(state, '平安镇');
+    expect(state.inventory.items.length).toBe(100);
+    expect(buyItem(state, '铁剑').success).toBe(true);
+    expect(state.inventory.items.find((i) => i.name === '铁剑')!.count).toBe(2);
+  });
+
+  it('absorb skill skips extra message when absorb is zero', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const state = createNewGame('主角');
+    learnSkill(state, '北冥神功');
+    state.character.mp = 50;
+    state.character.stamina = 100;
+    const enemies = [{ name: '高手', hp: 80, maxHp: 80, attack: 10, defence: 999 }];
+    const msg = useSkillInBattle(state, enemies, '北冥神功', 0).message;
+    expect(msg).not.toContain('吸取');
+  });
+
+  it('getStatus shows temporary buff lines', () => {
+    const state = createNewGame('主角');
+    state.inventory.items.push({ id: '37', name: '大力丸', count: 1 });
+    state.inventory.items.push({ id: '38', name: '疾风丸', count: 1 });
+    useItem(state, '大力丸');
+    useItem(state, '疾风丸');
+    const status = getStatus(state);
+    expect(status).toContain('攻加成');
+    expect(status).toContain('轻功加成');
+  });
+
+  it('buyItem rejects new item type when inventory full', () => {
+    const state = createNewGame('主角');
+    state.inventory.silver = 99999;
+    state.inventory.items = Array.from({ length: 100 }, (_, i) => ({
+      id: String(i),
+      name: `物品${i}`,
+      count: 1,
+    }));
+    moveTo(state, '平安镇');
+    expect(buyItem(state, '铁剑').success).toBe(false);
+  });
+
+  it('moveTo without encounter leaves encounter undefined', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    const state = createNewGame('主角');
+    moveTo(state, '山洞');
+    const result = moveTo(state, '小村');
+    expect(result.encounter).toBeUndefined();
+  });
+
+  it('useItem initializes buffs object when missing', () => {
+    const state = createNewGame('主角');
+    delete state.character.buffs;
+    state.inventory.items.push({ id: '30', name: '金创药', count: 1 });
+    state.character.hp = 50;
+    useItem(state, '金创药');
+    expect(state.character.buffs).toEqual({});
+  });
+
+  it('learnSkill initializes skillExp when missing', () => {
+    const state = createNewGame('主角');
+    delete state.character.skillExp;
+    learnSkill(state, '六脉神剑');
+    expect(state.character.skillExp?.['六脉神剑']).toBe(0);
+  });
+
+  it('advanceWeek clears temporary buffs', () => {
+    const state = createNewGame('主角');
+    state.character.buffs = { attack: 20 };
+    advanceWeek(state);
+    expect(state.character.buffs).toEqual({});
+  });
+
+  it('consumeItemStack no-ops when item missing from inventory', () => {
+    const state = createNewGame('主角');
+    consumeItemStack(state, '不存在');
+    expect(state.inventory.items.length).toBeGreaterThan(0);
+  });
+
+  it('useItem skill book skips iq and exp checks when requirements omitted', () => {
+    const state = createNewGame('主角');
+    state.character.skills = state.character.skills.filter((s) => s !== '基本拳法');
+    state.inventory.items.push({ id: '99', name: '测试秘籍', count: 1 });
+    const template = configLoader.getItem('金创药')!;
+    const { needIQ: _iq, needExp: _exp, ...baseTemplate } = template;
+    const originalGetItem = configLoader.getItem;
+    vi.spyOn(configLoader, 'getItem').mockImplementation((name) => {
+      if (name === '测试秘籍') {
+        return {
+          ...baseTemplate,
+          id: 99,
+          name: '测试秘籍',
+          type: 2,
+          skillId: 1,
+          useAddHp: 0,
+        };
+      }
+      return originalGetItem(name);
+    });
+    const result = useItem(state, '测试秘籍');
+    expect(result.success).toBe(true);
+    expect(state.character.skills).toContain('基本拳法');
+  });
+
+  it('useItem handles consumables without optional buff fields', () => {
+    const state = createNewGame('主角');
+    state.character.hp = 50;
+    state.inventory.items.push({ id: '30', name: '简药', count: 1 });
+    const template = configLoader.getItem('金创药')!;
+    const { useAddAttack: _a, useAddAgility: _g, ...minimal } = template;
+    const originalGetItem = configLoader.getItem;
+    vi.spyOn(configLoader, 'getItem').mockImplementation((name) => {
+      if (name === '简药') return { ...minimal, name: '简药', useAddHp: 50 };
+      return originalGetItem(name);
+    });
+    expect(useItem(state, '简药').success).toBe(true);
+    expect(state.character.hp).toBe(100);
+  });
+
+  it('grantSkillExp uses existing skill level entry in while loop', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);
+    const state = createNewGame('主角');
+    state.character.mp = 500;
+    state.character.skillLevels = { 基本拳法: 7 };
+    state.character.skillExp = { 基本拳法: 199 };
+    const battle = startBattle(state, '山贼');
+    useSkillInBattle(state, battle.enemies!, '基本拳法', 0);
+    expect(state.character.skillLevels['基本拳法']).toBe(9);
+    expect(state.character.skillExp['基本拳法']).toBe(3);
+  });
+
+  it('grantSkillExp initializes missing skill level during level-up loop', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1);
+    const state = createNewGame('主角');
+    state.character.mp = 500;
+    delete state.character.skillLevels['基本拳法'];
+    state.character.skillExp = { 基本拳法: 199 };
+    const battle = startBattle(state, '山贼');
+    useSkillInBattle(state, battle.enemies!, '基本拳法', 0);
+    expect(state.character.skillLevels['基本拳法']).toBe(2);
+    expect(state.character.skillExp['基本拳法']).toBe(3);
   });
 });

@@ -1,13 +1,49 @@
 {
-  "name": "jy-skill",
-  "version": "0.2.0",
-  "private": true,
+  "name": "@sdd330dev/jy-skill",
+  "version": "0.3.1",
+  "description": "金庸群侠传 Cursor Agent Skill — 对话式武侠 RPG，自然语言驱动移动、战斗与存档",
   "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "cursor",
+    "cursor-skill",
+    "agent-skill",
+    "rpg",
+    "金庸群侠传",
+    "jy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sdd330/jy-skill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sdd330/jy-skill/issues"
+  },
+  "homepage": "https://github.com/sdd330/jy-skill#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "packageManager": "pnpm@11.8.0",
   "engines": {
-    "node": ">=20.19.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=20.19.0"
   },
+  "bin": {
+    "jy-skill": "scripts/install-skill.mjs"
+  },
+  "files": [
+    "SKILL.md",
+    "AGENTS.md",
+    "LICENSE",
+    "references",
+    "assets",
+    "save/.gitkeep",
+    "scripts/game-engine.ts",
+    "scripts/game-logic.ts",
+    "scripts/config-loader.ts",
+    "scripts/persistence.ts",
+    "scripts/game-types.ts",
+    "scripts/install-skill.mjs"
+  ],
   "scripts": {
     "test": "vitest run",
     "test:skill": "vitest run",
@@ -20,8 +56,15 @@
     "check": "oxlint scripts vite.config.ts && oxfmt --check scripts vite.config.ts",
     "validate:meta": "tsx scripts/validate-skill.ts",
     "validate:skill": "tsx scripts/validate-assets.ts",
-    "validate": "pnpm run validate:meta && pnpm run validate:skill",
-    "ci": "pnpm run check && pnpm run typecheck && pnpm run validate && pnpm run test:coverage",
+    "validate:pack": "tsx scripts/validate-pack.ts",
+    "validate:versions": "tsx scripts/validate-versions.ts",
+    "validate:docs": "tsx scripts/validate-docs.ts",
+    "validate:npm": "node scripts/validate-npm-pack.mjs",
+    "validate": "pnpm run validate:meta && pnpm run validate:skill && pnpm run validate:versions && pnpm run validate:docs",
+    "audit:ci": "pnpm audit --audit-level=high",
+    "prepack": "pnpm run validate:versions",
+    "publish:npm": "npm publish --access public",
+    "ci": "pnpm run check && pnpm run typecheck && pnpm run validate && pnpm run validate:pack && pnpm run validate:npm && pnpm run audit:ci && pnpm run test:coverage",
     "pack:skill": "node scripts/pack-skill.mjs"
   },
   "devDependencies": {

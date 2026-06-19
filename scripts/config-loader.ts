@@ -18,6 +18,8 @@ export interface MapInfo {
   shops: string[];
   connections: string[];
   npcDialogs: Record<string, string>;
+  encounterRate?: number;
+  encounterEnemies?: string[];
 }
 
 export interface ItemConfig {
@@ -33,6 +35,13 @@ export interface ItemConfig {
   useAddMp: number;
   useAddStamina: number;
   useDePoison: number;
+  useAddAttack?: number;
+  useAddAgility?: number;
+  useAddDefence?: number;
+  useAddPoison?: number;
+  skillId?: number;
+  needIQ?: number;
+  needExp?: number;
 }
 
 export interface SkillConfig {
@@ -41,6 +50,7 @@ export interface SkillConfig {
   desc: string;
   mpCost: number;
   damageType: number;
+  poison?: number;
   levels: number[][];
 }
 
@@ -65,6 +75,8 @@ export interface EnemyTemplate {
   attack: number;
   defence: number;
   solo?: boolean;
+  onHitPoison?: number;
+  onHitHurt?: number;
 }
 
 export interface GameTemplates {
@@ -80,8 +92,23 @@ export interface GameTemplates {
   enemies: Record<string, EnemyTemplate | { characterId: number }>;
   maps?: Record<
     string,
-    { npcs: string[]; shops: string[]; connections: string[]; encounters?: number }
+    {
+      npcs: string[];
+      shops: string[];
+      connections: string[];
+      encounters?: number | { rate: number; enemies: string[] };
+    }
   >;
+}
+
+function parseEncounters(
+  encounters?: number | { rate: number; enemies: string[] },
+): Pick<MapInfo, 'encounterRate' | 'encounterEnemies'> {
+  if (encounters == null) return {};
+  if (typeof encounters === 'number') {
+    return { encounterRate: encounters, encounterEnemies: ['山贼', '强盗'] };
+  }
+  return { encounterRate: encounters.rate, encounterEnemies: [...encounters.enemies] };
 }
 
 // ============================================================================
@@ -97,6 +124,7 @@ const mapsByName = new Map<string, MapInfo>();
 const itemsByName = new Map<string, ItemConfig>();
 const itemsById = new Map<number, ItemConfig>();
 const skillsByName = new Map<string, SkillConfig>();
+const skillsById = new Map<number, SkillConfig>();
 const charactersById = new Map<number, CharacterConfig>();
 const charactersByName = new Map<string, CharacterConfig>();
 const dialogsById = new Map<string, DialogConfig>();
@@ -168,24 +196,29 @@ function buildMapsFromConfig(): void {
             .filter((name): name is string => Boolean(name));
 
     const shops =
-      templateMap && templateMap.shops.length > 0 ? [...templateMap.shops] : [...shopNames];
+      templateMap && templateMap.shops?.length > 0 ? [...templateMap.shops] : [...shopNames];
+
+    const encounterConfig = parseEncounters(templateMap?.encounters);
 
     mapsByName.set(map.name, {
       npcs: templateMap?.npcs?.length ? [...templateMap.npcs] : npcNames,
       shops,
       connections,
       npcDialogs,
+      ...encounterConfig,
     });
   }
 
   // templates 中有但 game-config 未列出的地图（兜底）
   for (const [name, map] of Object.entries(templateMaps)) {
     if (!mapsByName.has(name)) {
+      const encounterConfig = parseEncounters(map.encounters);
       mapsByName.set(name, {
         npcs: [...map.npcs],
         shops: [...map.shops],
         connections: [...map.connections],
         npcDialogs: {},
+        ...encounterConfig,
       });
     }
   }
@@ -219,6 +252,7 @@ function loadSkills(): void {
   const data = loadJson<{ skills: SkillConfig[] }>('skills.json');
   for (const skill of data.skills) {
     skillsByName.set(skill.name, skill);
+    skillsById.set(skill.id, skill);
   }
 }
 
@@ -255,6 +289,7 @@ export function resetConfigsForTest(): void {
   itemsByName.clear();
   itemsById.clear();
   skillsByName.clear();
+  skillsById.clear();
   charactersById.clear();
   charactersByName.clear();
   dialogsById.clear();
@@ -287,6 +322,27 @@ export function getItem(name: string): ItemConfig | undefined {
 export function getSkill(name: string): SkillConfig | undefined {
   initConfigs();
   return skillsByName.get(name);
+}
+
+export function getSkillById(id: number): SkillConfig | undefined {
+  initConfigs();
+  return skillsById.get(id);
+}
+
+/** damageType 数字 → calculateStaminaCost 字符串键 */
+export function mapDamageTypeToStaminaCost(damageType: number): string {
+  switch (damageType) {
+    case 1:
+      return 'absorbMp';
+    case 2:
+      return 'poison';
+    case 3:
+      return 'depoison';
+    case 4:
+      return 'heal';
+    default:
+      return 'normal';
+  }
 }
 
 export function getSkillAttackAtLevel(skillName: string, levelIndex = 0): number {
@@ -322,7 +378,21 @@ export function isArmor(item: ItemConfig): boolean {
 }
 
 export function isConsumable(item: ItemConfig): boolean {
-  return item.useAddHp > 0 || item.useAddMp > 0 || item.useAddStamina > 0 || item.useDePoison > 0;
+  return (
+    item.useAddHp > 0 ||
+    item.useAddMp > 0 ||
+    item.useAddStamina > 0 ||
+    item.useDePoison > 0 ||
+    (item.useAddAttack ?? 0) > 0 ||
+    (item.useAddAgility ?? 0) > 0 ||
+    (item.useAddDefence ?? 0) > 0 ||
+    (item.useAddPoison ?? 0) > 0 ||
+    isSkillBook(item)
+  );
+}
+
+export function isSkillBook(item: ItemConfig): boolean {
+  return item.type === 2 && (item.skillId ?? 0) > 0;
 }
 
 /** 校验 assets 完整性（CLI / CI 用） */
