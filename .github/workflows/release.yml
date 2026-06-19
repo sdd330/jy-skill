@@ -1,0 +1,24 @@
+name: Release Skill
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create zip
+        run: |
+          zip -r jy-skill.zip . -x '.git/*' '.github/*'
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: jy-skill.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
