@@ -1,0 +1,35 @@
+{
+  "name": "jy-skill",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=20.19.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:skill": "vitest run",
+    "test:logic": "vitest run scripts/game-logic.test.ts",
+    "test:engine": "vitest run scripts/game-engine.test.ts",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --fix scripts vite.config.ts",
+    "format": "oxfmt scripts vite.config.ts",
+    "check": "oxlint scripts vite.config.ts && oxfmt --check scripts vite.config.ts",
+    "validate:meta": "tsx scripts/validate-skill.ts",
+    "validate:skill": "tsx scripts/validate-assets.ts",
+    "validate": "pnpm run validate:meta && pnpm run validate:skill"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.2",
+    "@vitest/coverage-v8": "^4.1.9",
+    "oxfmt": "^0.55.0",
+    "oxlint": "^1.70.0",
+    "tsx": "^4.19.4",
+    "typescript": "~6.0.3",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.9"
+  }
+}

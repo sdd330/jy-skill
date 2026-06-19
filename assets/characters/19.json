@@ -1,0 +1,56 @@
+{
+  "id": 19,
+  "name": "慕容复",
+  "sexual": 1,
+  "pic": 19,
+  "modelKey": "murongfu",
+  "maxHp": 220,
+  "maxMp": 150,
+  "hpInc": 11,
+  "level": 3,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 45,
+  "agility": 35,
+  "defence": 30,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 40,
+  "sword": 50,
+  "blade": 30,
+  "exotic": 30,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 40,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 80,
+  "morality": 30,
+  "reputation": 40,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      200
+    ],
+    [
+      31,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

@@ -1,0 +1,52 @@
+{
+  "id": 41,
+  "name": "灭绝师太",
+  "sexual": 0,
+  "pic": 41,
+  "modelKey": "miejue",
+  "maxHp": 220,
+  "maxMp": 130,
+  "hpInc": 11,
+  "level": 3,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 42,
+  "agility": 28,
+  "defence": 30,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 20,
+  "sword": 50,
+  "blade": 0,
+  "exotic": 15,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 25,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 60,
+  "reputation": 35,
+  "weapon": 13,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      18,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      200
+    ],
+    [
+      31,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

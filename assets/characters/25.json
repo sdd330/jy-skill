@@ -1,0 +1,52 @@
+{
+  "id": 25,
+  "name": "阿紫",
+  "sexual": 0,
+  "pic": 25,
+  "modelKey": "azi",
+  "maxHp": 130,
+  "maxMp": 90,
+  "hpInc": 6,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 20,
+  "agility": 25,
+  "defence": 15,
+  "heal": 0,
+  "usePoison": 30,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 10,
+  "sword": 10,
+  "blade": 0,
+  "exotic": 20,
+  "hiddenWeapon": 20,
+  "martialKnowledge": 15,
+  "attackPoison": 30,
+  "ambidextrous": 0,
+  "iq": 65,
+  "morality": 30,
+  "reputation": 10,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      51,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      50
+    ],
+    [
+      51,
+      10
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

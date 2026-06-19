@@ -1,0 +1,56 @@
+{
+  "id": 20,
+  "name": "鸠摩智",
+  "sexual": 1,
+  "pic": 20,
+  "modelKey": "jiumozhi",
+  "maxHp": 280,
+  "maxMp": 200,
+  "hpInc": 14,
+  "level": 4,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 50,
+  "agility": 30,
+  "defence": 35,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 40,
+  "sword": 30,
+  "blade": 0,
+  "exotic": 50,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 45,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 85,
+  "morality": 40,
+  "reputation": 50,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      3,
+      3
+    ],
+    [
+      4,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      300
+    ],
+    [
+      31,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

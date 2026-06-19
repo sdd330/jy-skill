@@ -1,0 +1,52 @@
+{
+  "id": 28,
+  "name": "李莫愁",
+  "sexual": 0,
+  "pic": 28,
+  "modelKey": "lichou",
+  "maxHp": 200,
+  "maxMp": 130,
+  "hpInc": 10,
+  "level": 3,
+  "exp": 0,
+  "mpType": 0,
+  "attack": 40,
+  "agility": 35,
+  "defence": 25,
+  "heal": 0,
+  "usePoison": 20,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 30,
+  "sword": 40,
+  "blade": 0,
+  "exotic": 25,
+  "hiddenWeapon": 15,
+  "martialKnowledge": 25,
+  "attackPoison": 20,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 25,
+  "reputation": 30,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      51,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      150
+    ],
+    [
+      51,
+      10
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣"
+}

@@ -1,0 +1,52 @@
+{
+  "id": 42,
+  "name": "张翠山",
+  "sexual": 1,
+  "pic": 42,
+  "modelKey": "zhangcuishan",
+  "maxHp": 200,
+  "maxMp": 130,
+  "hpInc": 10,
+  "level": 2,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 35,
+  "agility": 30,
+  "defence": 25,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 30,
+  "sword": 40,
+  "blade": 0,
+  "exotic": 25,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 25,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 75,
+  "morality": 85,
+  "reputation": 25,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      18,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      150
+    ],
+    [
+      30,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

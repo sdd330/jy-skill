@@ -1,0 +1,56 @@
+{
+  "id": 13,
+  "name": "王重阳",
+  "sexual": 1,
+  "pic": 13,
+  "modelKey": "wangchongyang",
+  "maxHp": 400,
+  "maxMp": 250,
+  "hpInc": 18,
+  "level": 7,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 70,
+  "agility": 50,
+  "defence": 55,
+  "heal": 20,
+  "usePoison": 0,
+  "dePoison": 20,
+  "antiPoison": 20,
+  "fist": 60,
+  "sword": 60,
+  "blade": 0,
+  "exotic": 40,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 60,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 90,
+  "morality": 95,
+  "reputation": 100,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      95,
+      5
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "items": [
+    [
+      1,
+      1000
+    ],
+    [
+      32,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "射雕英雄传"
+}

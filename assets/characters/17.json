@@ -1,0 +1,52 @@
+{
+  "id": 17,
+  "name": "独孤求败",
+  "sexual": 1,
+  "pic": 17,
+  "modelKey": "duguqiubai",
+  "maxHp": 500,
+  "maxMp": 300,
+  "hpInc": 22,
+  "level": 10,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 80,
+  "agility": 55,
+  "defence": 65,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 50,
+  "sword": 100,
+  "blade": 0,
+  "exotic": 40,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 80,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 95,
+  "morality": 70,
+  "reputation": 100,
+  "weapon": 12,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      10,
+      10
+    ]
+  ],
+  "items": [
+    [
+      1,
+      5000
+    ],
+    [
+      32,
+      10
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣（传说）"
+}

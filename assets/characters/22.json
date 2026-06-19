@@ -1,0 +1,52 @@
+{
+  "id": 22,
+  "name": "萧远山",
+  "sexual": 1,
+  "pic": 22,
+  "modelKey": "xiaoyuanshan",
+  "maxHp": 300,
+  "maxMp": 180,
+  "hpInc": 15,
+  "level": 5,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 55,
+  "agility": 35,
+  "defence": 40,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 50,
+  "sword": 40,
+  "blade": 0,
+  "exotic": 30,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 30,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 50,
+  "reputation": 40,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      6,
+      4
+    ]
+  ],
+  "items": [
+    [
+      1,
+      300
+    ],
+    [
+      32,
+      2
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

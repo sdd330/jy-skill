@@ -1,0 +1,56 @@
+{
+  "id": 45,
+  "name": "杨逍",
+  "sexual": 1,
+  "pic": 45,
+  "modelKey": "yangxiao",
+  "maxHp": 240,
+  "maxMp": 150,
+  "hpInc": 12,
+  "level": 3,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 42,
+  "agility": 32,
+  "defence": 30,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 35,
+  "sword": 40,
+  "blade": 0,
+  "exotic": 35,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 30,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 80,
+  "morality": 55,
+  "reputation": 35,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      17,
+      3
+    ],
+    [
+      19,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      250
+    ],
+    [
+      31,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

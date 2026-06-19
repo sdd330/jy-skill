@@ -1,0 +1,56 @@
+{
+  "id": 0,
+  "name": "胡斐",
+  "sexual": 1,
+  "pic": 0,
+  "modelKey": "hufei",
+  "maxHp": 200,
+  "maxMp": 100,
+  "hpInc": 12,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 30,
+  "agility": 25,
+  "defence": 20,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 10,
+  "sword": 20,
+  "blade": 30,
+  "exotic": 0,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 10,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 80,
+  "reputation": 10,
+  "weapon": 11,
+  "armor": 20,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      50
+    ],
+    [
+      30,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "雪山飞狐"
+}

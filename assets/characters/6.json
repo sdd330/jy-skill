@@ -1,0 +1,56 @@
+{
+  "id": 6,
+  "name": "杨过",
+  "sexual": 1,
+  "pic": 6,
+  "modelKey": "yangguo",
+  "maxHp": 240,
+  "maxMp": 160,
+  "hpInc": 12,
+  "level": 2,
+  "exp": 0,
+  "mpType": 0,
+  "attack": 45,
+  "agility": 35,
+  "defence": 25,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 40,
+  "sword": 50,
+  "blade": 0,
+  "exotic": 20,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 30,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 85,
+  "morality": 75,
+  "reputation": 35,
+  "weapon": 12,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      15,
+      3
+    ],
+    [
+      16,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      180
+    ],
+    [
+      30,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣"
+}

@@ -1,0 +1,56 @@
+{
+  "id": 16,
+  "name": "周伯通",
+  "sexual": 1,
+  "pic": 16,
+  "modelKey": "zhoubotong",
+  "maxHp": 300,
+  "maxMp": 160,
+  "hpInc": 14,
+  "level": 4,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 50,
+  "agility": 45,
+  "defence": 35,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 55,
+  "sword": 40,
+  "blade": 0,
+  "exotic": 30,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 35,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 60,
+  "morality": 80,
+  "reputation": 50,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      14,
+      4
+    ],
+    [
+      98,
+      4
+    ]
+  ],
+  "items": [
+    [
+      1,
+      300
+    ],
+    [
+      31,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "射雕英雄传"
+}

@@ -1,0 +1,47 @@
+{
+  "id": 47,
+  "name": "小昭",
+  "sexual": 0,
+  "pic": 47,
+  "modelKey": "xiaozhao",
+  "maxHp": 120,
+  "maxMp": 80,
+  "hpInc": 6,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 15,
+  "agility": 25,
+  "defence": 15,
+  "heal": 10,
+  "usePoison": 0,
+  "dePoison": 5,
+  "antiPoison": 0,
+  "fist": 10,
+  "sword": 15,
+  "blade": 0,
+  "exotic": 15,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 20,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 90,
+  "reputation": 10,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [],
+  "items": [
+    [
+      1,
+      80
+    ],
+    [
+      30,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

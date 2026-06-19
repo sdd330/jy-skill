@@ -1,0 +1,56 @@
+{
+  "id": 35,
+  "name": "慕容博",
+  "sexual": 1,
+  "pic": 35,
+  "modelKey": "murongbo",
+  "maxHp": 310,
+  "maxMp": 190,
+  "hpInc": 15,
+  "level": 5,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 55,
+  "agility": 35,
+  "defence": 40,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 50,
+  "sword": 45,
+  "blade": 30,
+  "exotic": 35,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 45,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 85,
+  "morality": 35,
+  "reputation": 45,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      1,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ],
+  "items": [
+    [
+      1,
+      400
+    ],
+    [
+      32,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

@@ -1,0 +1,56 @@
+{
+  "id": 2,
+  "name": "乔峰",
+  "sexual": 1,
+  "pic": 2,
+  "modelKey": "qiaofeng",
+  "maxHp": 300,
+  "maxMp": 150,
+  "hpInc": 15,
+  "level": 3,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 50,
+  "agility": 35,
+  "defence": 40,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 60,
+  "sword": 0,
+  "blade": 0,
+  "exotic": 30,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 30,
+  "attackPoison": 0,
+  "ambidextrous": 1,
+  "iq": 60,
+  "morality": 95,
+  "reputation": 50,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      6,
+      3
+    ],
+    [
+      7,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      200
+    ],
+    [
+      31,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

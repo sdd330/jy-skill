@@ -1,0 +1,47 @@
+{
+  "id": 33,
+  "name": "陆无双",
+  "sexual": 0,
+  "pic": 33,
+  "modelKey": "luwushuang",
+  "maxHp": 130,
+  "maxMp": 90,
+  "hpInc": 6,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 22,
+  "agility": 26,
+  "defence": 16,
+  "heal": 5,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 12,
+  "sword": 25,
+  "blade": 0,
+  "exotic": 12,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 15,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 65,
+  "morality": 80,
+  "reputation": 10,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [],
+  "items": [
+    [
+      1,
+      60
+    ],
+    [
+      30,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣"
+}

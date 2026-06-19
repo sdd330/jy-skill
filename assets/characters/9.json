@@ -1,0 +1,56 @@
+{
+  "id": 9,
+  "name": "小龙女",
+  "sexual": 0,
+  "pic": 9,
+  "modelKey": "xiaolongnv",
+  "maxHp": 170,
+  "maxMp": 150,
+  "hpInc": 9,
+  "level": 2,
+  "exp": 0,
+  "mpType": 0,
+  "attack": 35,
+  "agility": 40,
+  "defence": 25,
+  "heal": 10,
+  "usePoison": 0,
+  "dePoison": 5,
+  "antiPoison": 0,
+  "fist": 20,
+  "sword": 50,
+  "blade": 0,
+  "exotic": 30,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 20,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 85,
+  "reputation": 15,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      15,
+      2
+    ],
+    [
+      5,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      100
+    ],
+    [
+      30,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣"
+}

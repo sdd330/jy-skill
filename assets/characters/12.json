@@ -1,0 +1,52 @@
+{
+  "id": 12,
+  "name": "欧阳锋",
+  "sexual": 1,
+  "pic": 12,
+  "modelKey": "ouyangfeng",
+  "maxHp": 330,
+  "maxMp": 170,
+  "hpInc": 15,
+  "level": 5,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 58,
+  "agility": 38,
+  "defence": 42,
+  "heal": 0,
+  "usePoison": 30,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 65,
+  "sword": 0,
+  "blade": 0,
+  "exotic": 30,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 35,
+  "attackPoison": 30,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 10,
+  "reputation": 60,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      94,
+      5
+    ]
+  ],
+  "items": [
+    [
+      1,
+      300
+    ],
+    [
+      31,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "射雕英雄传"
+}

@@ -1,0 +1,52 @@
+{
+  "id": 43,
+  "name": "殷素素",
+  "sexual": 0,
+  "pic": 43,
+  "modelKey": "yinsusu",
+  "maxHp": 140,
+  "maxMp": 100,
+  "hpInc": 7,
+  "level": 2,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 28,
+  "agility": 28,
+  "defence": 18,
+  "heal": 0,
+  "usePoison": 15,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 15,
+  "sword": 25,
+  "blade": 0,
+  "exotic": 20,
+  "hiddenWeapon": 15,
+  "martialKnowledge": 18,
+  "attackPoison": 15,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 55,
+  "reputation": 20,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      51,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      120
+    ],
+    [
+      51,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

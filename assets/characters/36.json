@@ -1,0 +1,52 @@
+{
+  "id": 36,
+  "name": "达尔巴",
+  "sexual": 1,
+  "pic": 36,
+  "modelKey": "daerba",
+  "maxHp": 250,
+  "maxMp": 100,
+  "hpInc": 13,
+  "level": 3,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 45,
+  "agility": 20,
+  "defence": 35,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 40,
+  "sword": 0,
+  "blade": 45,
+  "exotic": 0,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 10,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 40,
+  "morality": 60,
+  "reputation": 15,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      2,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      150
+    ],
+    [
+      31,
+      3
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "神雕侠侣"
+}

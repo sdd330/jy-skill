@@ -1,0 +1,56 @@
+{
+  "id": 40,
+  "name": "成昆",
+  "sexual": 1,
+  "pic": 40,
+  "modelKey": "chengkun",
+  "maxHp": 250,
+  "maxMp": 150,
+  "hpInc": 12,
+  "level": 4,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 45,
+  "agility": 30,
+  "defence": 32,
+  "heal": 0,
+  "usePoison": 20,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 40,
+  "sword": 35,
+  "blade": 0,
+  "exotic": 30,
+  "hiddenWeapon": 10,
+  "martialKnowledge": 30,
+  "attackPoison": 20,
+  "ambidextrous": 0,
+  "iq": 80,
+  "morality": 10,
+  "reputation": 30,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      17,
+      2
+    ],
+    [
+      51,
+      3
+    ]
+  ],
+  "items": [
+    [
+      1,
+      250
+    ],
+    [
+      31,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "倚天屠龙记"
+}

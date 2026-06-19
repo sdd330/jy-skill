@@ -1,0 +1,52 @@
+{
+  "id": 34,
+  "name": "游坦之",
+  "sexual": 1,
+  "pic": 34,
+  "modelKey": "youtanzhi",
+  "maxHp": 190,
+  "maxMp": 110,
+  "hpInc": 10,
+  "level": 2,
+  "exp": 0,
+  "mpType": 1,
+  "attack": 35,
+  "agility": 25,
+  "defence": 28,
+  "heal": 0,
+  "usePoison": 20,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 30,
+  "sword": 0,
+  "blade": 0,
+  "exotic": 25,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 15,
+  "attackPoison": 20,
+  "ambidextrous": 0,
+  "iq": 45,
+  "morality": 35,
+  "reputation": 10,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      51,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      80
+    ],
+    [
+      51,
+      5
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

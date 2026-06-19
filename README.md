@@ -1,0 +1,111 @@
+# 金庸群侠传 · 对话武侠 RPG
+
+独立的 Cursor Agent Skill。玩家通过自然语言与智能体对话，体验金庸武侠冒险。
+
+## 特性
+
+- 自然语言交互，无需记忆指令
+- 自动记忆游戏状态（引擎在每次状态变更后写入 `save/game-state.json`，原子替换防损坏）
+- 回合制战棋战斗
+- 116 个金庸角色、25 种武功、28 种物品（`assets/` 驱动）
+
+## 使用
+
+```
+jy              # 开始游戏 / 继续游戏
+jy 帮助         # 查看帮助
+```
+
+## 安装
+
+本仓库即完整 skill，**不依赖任何 monorepo 或子项目**。
+
+### Cursor
+
+任选一种方式注册：
+
+**项目内（推荐）**
+
+```bash
+# 在本仓库根目录直接开发；或复制到目标项目的 skill 目录
+mkdir -p .cursor/skills && cp -R /path/to/jy .cursor/skills/jy
+```
+
+**个人全局**
+
+```bash
+mkdir -p ~/.cursor/skills && cp -R /path/to/jy ~/.cursor/skills/jy
+```
+
+Agent 读取 `SKILL.md` 与 [AGENTS.md](AGENTS.md) 即可运行。
+
+### 发版包
+
+Git tag（`v*`）触发 [Release 工作流](.github/workflows/release.yml)，生成 `jy-skill.zip` 并发布 GitHub Release。
+
+## CI/CD
+
+| 工作流 | 触发 | 说明 |
+|--------|------|------|
+| [CI](.github/workflows/ci.yml) | push / PR → `main` | oxlint、oxfmt、TypeScript、SKILL/资产校验、Vitest + 覆盖率 |
+| [Release](.github/workflows/release.yml) | tag `v*` | 全量检查后打包 `jy-skill.zip` 发布 |
+
+本地与 CI 对齐：
+
+```bash
+pnpm run check && pnpm run typecheck && pnpm run validate && pnpm run test:coverage
+```
+
+## 开发与测试
+
+```bash
+pnpm install
+pnpm run check             # oxlint + oxfmt
+pnpm run typecheck         # TypeScript 6
+pnpm run validate          # SKILL.md 格式 + 资产校验
+pnpm run validate:meta     # 仅 SKILL.md frontmatter
+pnpm run validate:skill    # 仅 assets/
+pnpm test                  # Vitest 全部测试
+pnpm run test:logic        # 仅 game-logic 公式单元测试
+pnpm run test:engine       # 仅 game-engine 集成测试
+pnpm run test:coverage     # 覆盖率报告
+pnpm run lint              # oxlint --fix
+pnpm run format            # oxfmt
+```
+
+## 目录结构
+
+```
+jy/
+├── SKILL.md              # 技能定义（含 YAML frontmatter）
+├── AGENTS.md             # 智能体叙事指南
+├── package.json          # pnpm 项目配置
+├── pnpm-lock.yaml        # pnpm 锁文件
+├── pnpm-workspace.yaml   # pnpm 构建白名单（esbuild）
+├── .npmrc                # pnpm 配置
+├── vite.config.ts        # Vite 8 + Vitest 配置
+├── tsconfig.json         # TypeScript 6
+├── .oxlintrc.json        # Oxlint
+├── .oxfmtrc.json         # Oxfmt
+├── scripts/
+│   ├── game-engine.ts    # 唯一 API 入口
+│   ├── game-logic.ts     # 核心公式
+│   ├── config-loader.ts  # assets 加载
+│   ├── persistence.ts    # 存档读写
+│   ├── validate-skill.ts # SKILL.md 格式校验
+│   └── validate-assets.ts
+├── references/
+│   └── game-design.md
+├── assets/
+│   ├── characters/
+│   ├── skills.json
+│   ├── items.json
+│   ├── game-config.json
+│   └── templates.json
+└── save/
+    └── game-state.json   # 运行时生成
+```
+
+## 许可
+
+MIT

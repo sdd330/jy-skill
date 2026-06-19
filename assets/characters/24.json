@@ -1,0 +1,43 @@
+{
+  "id": 24,
+  "name": "阿朱",
+  "sexual": 0,
+  "pic": 24,
+  "modelKey": "azhu",
+  "maxHp": 120,
+  "maxMp": 80,
+  "hpInc": 6,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 15,
+  "agility": 25,
+  "defence": 15,
+  "heal": 10,
+  "usePoison": 0,
+  "dePoison": 5,
+  "antiPoison": 0,
+  "fist": 10,
+  "sword": 10,
+  "blade": 0,
+  "exotic": 15,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 15,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 70,
+  "morality": 85,
+  "reputation": 15,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [],
+  "items": [
+    [
+      1,
+      50
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}

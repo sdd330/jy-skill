@@ -1,0 +1,48 @@
+{
+  "id": 201,
+  "name": "强盗",
+  "sexual": 1,
+  "pic": 201,
+  "modelKey": "robber",
+  "maxHp": 120,
+  "maxMp": 30,
+  "hpInc": 6,
+  "level": 2,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 25,
+  "agility": 15,
+  "defence": 15,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 15,
+  "sword": 0,
+  "blade": 20,
+  "exotic": 0,
+  "hiddenWeapon": 10,
+  "martialKnowledge": 8,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 25,
+  "morality": 5,
+  "reputation": 0,
+  "weapon": 11,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [
+    [
+      2,
+      2
+    ]
+  ],
+  "items": [
+    [
+      1,
+      50
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "通用敌人"
+}

@@ -1,0 +1,43 @@
+{
+  "id": 18,
+  "name": "王语嫣",
+  "sexual": 0,
+  "pic": 18,
+  "modelKey": "wangyuyan",
+  "maxHp": 120,
+  "maxMp": 100,
+  "hpInc": 6,
+  "level": 1,
+  "exp": 0,
+  "mpType": 2,
+  "attack": 10,
+  "agility": 20,
+  "defence": 15,
+  "heal": 0,
+  "usePoison": 0,
+  "dePoison": 0,
+  "antiPoison": 0,
+  "fist": 5,
+  "sword": 5,
+  "blade": 5,
+  "exotic": 5,
+  "hiddenWeapon": 0,
+  "martialKnowledge": 80,
+  "attackPoison": 0,
+  "ambidextrous": 0,
+  "iq": 95,
+  "morality": 90,
+  "reputation": 30,
+  "weapon": 0,
+  "armor": 0,
+  "cultivationItem": 0,
+  "skills": [],
+  "items": [
+    [
+      1,
+      50
+    ]
+  ],
+  "leaveStoryId": "",
+  "source": "天龙八部"
+}
