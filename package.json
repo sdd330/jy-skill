@@ -74,7 +74,7 @@
     "pack:skill": "node scripts/pack-skill.mjs"
   },
   "devDependencies": {
-    "@types/node": "^25.0.2",
+    "@types/node": "^26.0.0",
     "@vitest/coverage-v8": "^4.1.9",
     "oxfmt": "^0.55.0",
     "oxlint": "^1.70.0",
