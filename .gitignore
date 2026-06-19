@@ -4,6 +4,7 @@ node_modules/
 # 构建 / 测试产物
 dist/
 coverage/
+jy-skill.zip
 
 # Vitest / Vite 缓存
 .vitest/

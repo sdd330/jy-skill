@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -14,8 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  quality:
-    name: Lint · Typecheck · Validate · Test
+  static-checks:
+    name: Lint · Typecheck · Validate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,14 +34,22 @@ jobs:
       - name: Validate SKILL.md and assets
         run: pnpm run validate
 
-      - name: Run unit tests (game-logic)
-        run: pnpm run test:logic
+  test-coverage:
+    name: Test · Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Run integration tests (game-engine)
-        run: pnpm run test:engine
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
 
-      - name: Run full test suite with coverage
+      - name: Run tests with coverage
         run: pnpm run test:coverage
+
+      - name: Coverage summary
+        if: always()
+        run: node .github/scripts/coverage-summary.mjs
 
       - name: Upload coverage report
         if: always()

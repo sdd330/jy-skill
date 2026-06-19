@@ -9,6 +9,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['scripts/game-logic.ts', 'scripts/game-engine.ts', 'scripts/persistence.ts'],
       exclude: ['scripts/**/*.test.ts'],
+      reporter: ['text', 'json-summary', 'lcov'],
       thresholds: {
         lines: 100,
         functions: 100,

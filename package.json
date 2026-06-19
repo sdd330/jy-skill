@@ -20,7 +20,9 @@
     "check": "oxlint scripts vite.config.ts && oxfmt --check scripts vite.config.ts",
     "validate:meta": "tsx scripts/validate-skill.ts",
     "validate:skill": "tsx scripts/validate-assets.ts",
-    "validate": "pnpm run validate:meta && pnpm run validate:skill"
+    "validate": "pnpm run validate:meta && pnpm run validate:skill",
+    "ci": "pnpm run check && pnpm run typecheck && pnpm run validate && pnpm run test:coverage",
+    "pack:skill": "node scripts/pack-skill.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.0.2",

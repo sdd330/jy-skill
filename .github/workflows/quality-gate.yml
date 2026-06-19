@@ -1,0 +1,30 @@
+name: Quality Gate
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: Lint · Typecheck · Validate · Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
+
+      - name: Lint and format check
+        run: pnpm run check
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Validate SKILL.md and assets
+        run: pnpm run validate
+
+      - name: Run tests with coverage
+        run: pnpm run test:coverage

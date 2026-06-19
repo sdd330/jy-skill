@@ -6,6 +6,14 @@ inputs:
     description: Node.js version
     default: '22'
 
+outputs:
+  node-version:
+    description: Node.js version in use
+    value: ${{ inputs.node-version }}
+  pnpm-version:
+    description: pnpm version in use
+    value: '11.8.0'
+
 runs:
   using: composite
   steps:

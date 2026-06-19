@@ -1,5 +1,7 @@
 # 金庸群侠传 · 对话武侠 RPG
 
+[![CI](https://github.com/sdd330/jy-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/sdd330/jy-skill/actions/workflows/ci.yml)
+
 独立的 Cursor Agent Skill。玩家通过自然语言与智能体对话，体验金庸武侠冒险。
 
 ## 特性
@@ -9,12 +11,22 @@
 - 回合制战棋战斗
 - 116 个金庸角色、25 种武功、28 种物品（`assets/` 驱动）
 
-## 使用
+## 玩家快速上手
 
-```
-jy              # 开始游戏 / 继续游戏
-jy 帮助         # 查看帮助
-```
+1. **安装 skill**（见下方「安装」）到 Cursor 项目或全局 skills 目录。
+2. 在对话中说 **`jy`** 或 **「开始游戏」** —— 自动读档或从小村开始新冒险。
+3. 用**自然语言**描述你想做的事，无需记指令。
+
+常用说法示例：
+
+- 「去平安镇」「和村长聊聊」
+- 「买一把铁剑」「用金创药」
+- 「攻击山贼」「查看背包」「休息」
+- 「帮助」或「怎么玩」查看说明
+
+完整地图、战斗与 FAQ 见 **[玩家手册](references/player-guide.md)**。
+
+---
 
 ## 安装
 
@@ -37,7 +49,7 @@ mkdir -p .cursor/skills && cp -R /path/to/jy .cursor/skills/jy
 mkdir -p ~/.cursor/skills && cp -R /path/to/jy ~/.cursor/skills/jy
 ```
 
-Agent 读取 `SKILL.md` 与 [AGENTS.md](AGENTS.md) 即可运行。
+Agent 读取 `SKILL.md` 与 [AGENTS.md](AGENTS.md) 即可运行；玩家说明见 [references/player-guide.md](references/player-guide.md)。
 
 ### 发版包
 
@@ -47,19 +59,30 @@ Git tag（`v*`）触发 [Release 工作流](.github/workflows/release.yml)，生
 
 | 工作流 | 触发 | 说明 |
 |--------|------|------|
-| [CI](.github/workflows/ci.yml) | push / PR → `main` | oxlint、oxfmt、TypeScript、SKILL/资产校验、Vitest + 覆盖率 |
-| [Release](.github/workflows/release.yml) | tag `v*` | 全量检查后打包 `jy-skill.zip` 发布 |
+| [CI](.github/workflows/ci.yml) | push / PR → `main`、手动 `workflow_dispatch` | 并行：`static-checks`（lint/typecheck/validate）+ `test-coverage`（Vitest 100% 覆盖率 + Step Summary） |
+| [Quality Gate](.github/workflows/quality-gate.yml) | 被 CI / Release 调用 | 可复用质量门禁（lint → typecheck → validate → test:coverage） |
+| [Release](.github/workflows/release.yml) | tag `v*` | Quality Gate → 打包 `jy-skill.zip` → GitHub Release（tag 须与 `package.json` version 一致） |
+
+Dependabot 每周检查 GitHub Actions 与 npm 依赖更新。
 
 本地与 CI 对齐：
 
 ```bash
-pnpm run check && pnpm run typecheck && pnpm run validate && pnpm run test:coverage
+pnpm run ci
+```
+
+打包 skill 发版包（与 Release 工作流相同）：
+
+```bash
+pnpm run pack:skill
+node scripts/pack-skill.mjs --verify
 ```
 
 ## 开发与测试
 
 ```bash
 pnpm install
+pnpm run ci                 # 与 CI 门禁一致
 pnpm run check             # oxlint + oxfmt
 pnpm run typecheck         # TypeScript 6
 pnpm run validate          # SKILL.md 格式 + 资产校验
@@ -95,6 +118,7 @@ jy/
 │   ├── validate-skill.ts # SKILL.md 格式校验
 │   └── validate-assets.ts
 ├── references/
+│   ├── player-guide.md   # 玩家手册
 │   └── game-design.md
 ├── assets/
 │   ├── characters/
@@ -103,7 +127,7 @@ jy/
 │   ├── game-config.json
 │   └── templates.json
 └── save/
-    └── game-state.json   # 运行时生成
+    └── .gitkeep            # 运行时存档目录占位
 ```
 
 ## 许可

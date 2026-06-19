@@ -1,8 +1,8 @@
 ---
 name: jy
 description: >-
-  金庸群侠传对话式武侠 RPG：移动、NPC 对话、商店、物品、武功学习与回合制战斗，支持存档。
-  Use when the user says jy, 开始游戏, or 金庸群侠传, or when driving game actions via scripts/game-engine.ts.
+  金庸群侠传对话式武侠 RPG：移动、NPC 对话、商店、物品、武功学习与回合制战斗，支持存档与新人引导。
+  Use when the user says jy, 开始游戏, 帮助, 怎么玩, or 金庸群侠传, or when driving game actions via scripts/game-engine.ts.
 license: MIT
 metadata:
   version: "0.2.0"
@@ -16,6 +16,10 @@ disable-model-invocation: false
 ## 何时使用
 
 玩家说「jy」「开始游戏」「金庸群侠传」，或需要以自然语言驱动武侠冒险时加载本 skill。
+
+**帮助与引导**：玩家说「帮助」「怎么玩」「jy 帮助」「指令」时，遵循 [AGENTS.md](AGENTS.md) 帮助模板回复；完整玩家向说明见 [references/player-guide.md](references/player-guide.md)。
+
+**新玩家首登**：无存档时 `loadOrCreateGame` 创建新角色，须按 [AGENTS.md](AGENTS.md)「新玩家首登」给出欢迎语、初始处境与三条建议。
 
 开始游戏后须同时遵循 [AGENTS.md](AGENTS.md) 叙事规范（武侠文风、沉浸感、注意事项）。
 
@@ -108,6 +112,24 @@ saveGameState(state) // 可选
 → 叙述战斗过程与结果 + 状态栏
 ```
 
+**示例 4 — 新人求帮助**
+
+```
+玩家: "jy 帮助" / "怎么玩"
+→ 不调用战斗/移动 API（除非玩家同时在玩）
+→ 按 AGENTS.md 帮助模板：自然语言说明 + 常用说法 + 当前地点可为之事
+→ 可引用 player-guide.md 中的地图/战斗要点 + 状态栏
+```
+
+**示例 5 — 新游戏首登**
+
+```
+玩家: "jy"（无存档）
+→ loadOrCreateGame(createNewGame, '主角')
+→ 武侠欢迎 + 小村处境 + 三条建议（村长/平安镇/查看背包）
+→ getStatus(state) 生成状态栏
+```
+
 ## 目录
 
 ```
@@ -126,10 +148,11 @@ jy/
 │   ├── validate-skill.ts  # SKILL.md 格式校验
 │   └── validate-assets.ts # 资产校验 CLI
 ├── references/
-│   └── game-design.md     # 完整设计文档
+│   ├── player-guide.md  # 玩家手册（帮助、地图、FAQ）
+│   └── game-design.md   # 完整设计文档
 ├── assets/                # 116 角色 / 武功 / 物品 / 地图
 └── save/
-    └── game-state.json    # 运行时存档（自动创建）
+    └── .gitkeep           # 运行时存档目录（game-state.json 自动创建）
 ```
 
 ## API 入口（game-engine.ts）
@@ -143,7 +166,7 @@ jy/
 | 物品 | `buyItem`, `useItem`, `equipItem`, `learnSkill` |
 | 战斗 | `startBattle`, `attackEnemy`, `useSkillInBattle`, `enemyAttack`, `isDead` |
 
-叙事细节与完整流程见 [AGENTS.md](AGENTS.md)。
+叙事细节、新人引导与完整流程见 [AGENTS.md](AGENTS.md)；玩家手册见 [references/player-guide.md](references/player-guide.md)。
 
 ## 核心公式
 

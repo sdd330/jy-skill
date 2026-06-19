@@ -15,25 +15,7 @@ permissions:
 jobs:
   quality:
     name: Pre-release checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup
-
-      - name: Lint and format check
-        run: pnpm run check
-
-      - name: Typecheck
-        run: pnpm run typecheck
-
-      - name: Validate SKILL.md and assets
-        run: pnpm run validate
-
-      - name: Run tests with coverage
-        run: pnpm run test:coverage
+    uses: ./.github/workflows/quality-gate.yml
 
   release:
     name: Publish GitHub Release
@@ -43,16 +25,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create skill zip
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
+
+      - name: Verify tag matches package version
         run: |
-          zip -r jy-skill.zip . \
-            -x '.git/*' \
-            -x '.github/*' \
-            -x 'node_modules/*' \
-            -x 'coverage/*' \
-            -x '.vitest/*' \
-            -x 'save/game-state.json' \
-            -x '*.log'
+          PKG_VERSION=$(node -pe "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Pack skill zip
+        run: pnpm run pack:skill
+
+      - name: Verify zip contents
+        run: node scripts/pack-skill.mjs --verify
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
